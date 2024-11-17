@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class UserPrincipal implements OAuth2User, UserDetails {
+public class UserPrincipal implements OAuth2User {
 
     private Member member;
     private Map<String, Object> attributes;
@@ -27,16 +27,6 @@ public class UserPrincipal implements OAuth2User, UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
-    }
-
-    @Override
-    public String getPassword() {
-        return "";
-    }
-
-    @Override
-    public String getUsername() {
-        return "";
     }
 
     @Override

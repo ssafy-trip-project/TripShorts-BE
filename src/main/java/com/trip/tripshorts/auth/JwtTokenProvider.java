@@ -5,10 +5,14 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.Base64;
 import java.util.Date;
 
+@Component
+@RequiredArgsConstructor
 public class JwtTokenProvider {
 
     private String secretKey = "tokensecretkeytokensecretkeytokensecretkeytokensecretkeytokensecretkey";
