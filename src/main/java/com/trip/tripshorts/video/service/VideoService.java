@@ -30,19 +30,7 @@ public class VideoService {
 
     @Transactional
     public VideoCreateResponse createVideo(VideoCreateRequest videoCreateRequest) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String email;
-
-        if (principal instanceof UserPrincipal) {
-            email = ((UserPrincipal) principal).getEmail();
-        } else if (principal instanceof String) {
-            email = (String) principal;
-        } else {
-            throw new RuntimeException("Unknown principal type: " + principal.getClass());
-        }
-
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Member not found with email: " + email));
+        Member member = authService.getCurrentMember();
 
         Video video = Video.builder()
                 .videoUrl(videoCreateRequest.getVideoUrl())
