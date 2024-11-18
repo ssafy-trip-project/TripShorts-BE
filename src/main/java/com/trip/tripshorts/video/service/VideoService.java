@@ -1,0 +1,10 @@
+package com.trip.tripshorts.video.service;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class VideoService {
+
+}

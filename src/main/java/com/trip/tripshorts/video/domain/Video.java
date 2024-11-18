@@ -40,4 +40,8 @@ public class Video extends BaseTimeEntity {
     @JoinColumn(name = "tour_id")
     private Tour tour;
 
+    public void addComment(Comment comment) {
+        comments.add(comment);
+        comment.setVideo(this);
+    }
 }
