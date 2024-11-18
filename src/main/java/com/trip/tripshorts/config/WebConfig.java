@@ -1,4 +1,4 @@
-package com.trip.tripshorts.common.config;
+package com.trip.tripshorts.config;
 
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
