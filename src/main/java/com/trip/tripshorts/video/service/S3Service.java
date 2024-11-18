@@ -8,6 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.net.URL;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
@@ -22,26 +25,16 @@ public class S3Service {
     private String bucket;
 
     public String generatePresignedUrl(String originalFilename, String contentType) {
-
         String fileKey = "videos/shorts/" + UUID.randomUUID() + "-" + originalFilename;
         log.info("Generating presigned URL for bucket: {}, fileKey: {}", bucket, fileKey);
 
-        try {
-            GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucket, fileKey)
-                    .withMethod(HttpMethod.PUT)
-                    .withContentType(contentType);
+        GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucket, fileKey)
+                .withMethod(HttpMethod.PUT)
+                .withContentType(contentType);
 
-            Date expiration = new Date();
-            expiration.setTime(expiration.getTime() + 1000 * 60 * 10); // 10분
-            generatePresignedUrlRequest.setExpiration(expiration);
+        // 현재 시간으로부터 10분 후로 만료 시간 설정
+        request.setExpiration(Date.from(Instant.now().plus(Duration.ofMinutes(10))));
 
-            String url = amazonS3.generatePresignedUrl(generatePresignedUrlRequest).toString();
-            log.info("Generated URL: {}", url);
-            return url;
-
-        } catch (Exception e) {
-            log.error("Error generating presigned URL: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to generate presigned URL", e);
-        }
+        return amazonS3.generatePresignedUrl(request).toString();
     }
 }
