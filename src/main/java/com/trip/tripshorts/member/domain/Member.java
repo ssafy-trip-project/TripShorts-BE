@@ -47,4 +47,8 @@ public class Member extends BaseTimeEntity {
         return this;
     }
 
+    public void addComment(Comment comment) {
+        comments.add(comment);
+        comment.setMember(this);
+    }
 }

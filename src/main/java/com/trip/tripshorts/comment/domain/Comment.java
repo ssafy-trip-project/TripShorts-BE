@@ -15,6 +15,8 @@ public class Comment {
     @Column(name = "comment_id")
     private Long id;
 
+    private String content;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "video_id")
     private Video video;
@@ -23,4 +25,15 @@ public class Comment {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    public Comment(String content) {
+        this.content = content;
+    }
+
+    public void setMember(Member member) {
+        this.member = member;
+    }
+
+    public void setVideo(Video video) {
+        this.video = video;
+    }
 }
