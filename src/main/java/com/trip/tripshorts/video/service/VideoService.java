@@ -1,18 +1,22 @@
 package com.trip.tripshorts.video.service;
 
-import com.trip.tripshorts.auth.domain.UserPrincipal;
 import com.trip.tripshorts.auth.service.AuthService;
 import com.trip.tripshorts.member.domain.Member;
 import com.trip.tripshorts.member.repository.MemberRepository;
+import com.trip.tripshorts.tour.domain.Tour;
 import com.trip.tripshorts.video.domain.Video;
 import com.trip.tripshorts.video.dto.VideoCreateRequest;
 import com.trip.tripshorts.video.dto.VideoCreateResponse;
+import com.trip.tripshorts.video.dto.VideoInfoResponse;
+import com.trip.tripshorts.video.dto.VideoListResponse;
 import com.trip.tripshorts.video.repository.VideoRepository;
-import jakarta.transaction.Transactional;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -41,5 +45,16 @@ public class VideoService {
         return VideoCreateResponse.from(videoRepository.save(video));
     }
 
+    @Transactional(readOnly = true)
+    public List<VideoListResponse> getVideos() {
+        return videoRepository.fetchVideoList();
+    }
 
+
+    public VideoInfoResponse getVideoInfo(Long videoId) {
+        Tour tour = videoRepository.findTourByVideoId(videoId)
+                .orElseThrow(() -> new EntityNotFoundException("Tour not found for video id: " + videoId));
+
+        return new VideoInfoResponse(videoId, tour);
+    }
 }

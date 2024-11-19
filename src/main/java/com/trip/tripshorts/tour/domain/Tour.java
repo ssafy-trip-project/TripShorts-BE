@@ -18,9 +18,16 @@ public class Tour {
     @Column(name = "tour_id")
     private Long id;
 
+    private String title;
+    private String address;
+
+    @Column(name = "area_code")
+    private int areaCode;
+
+    @Column(name = "si_gun_gu_code")
+    private int siGunGuCode;
     private double lat;
     private double lng;
-    private String description;
 
     @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Video> videos = new ArrayList<>();

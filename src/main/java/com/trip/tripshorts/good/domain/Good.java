@@ -15,6 +15,8 @@ public class Good {
     @Column(name = "good_id")
     private Long id;
 
+    private int count;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "video_id")
     private Video video;

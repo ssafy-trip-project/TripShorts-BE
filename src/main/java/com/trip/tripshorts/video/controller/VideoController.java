@@ -2,6 +2,8 @@ package com.trip.tripshorts.video.controller;
 
 import com.trip.tripshorts.video.dto.VideoCreateRequest;
 import com.trip.tripshorts.video.dto.VideoCreateResponse;
+import com.trip.tripshorts.video.dto.VideoInfoResponse;
+import com.trip.tripshorts.video.dto.VideoListResponse;
 import com.trip.tripshorts.video.service.VideoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -37,4 +40,13 @@ public class VideoController {
         return ResponseEntity.ok(videoService.createVideo(videoCreateRequest));
     }
 
+    @GetMapping
+    public ResponseEntity<List<VideoListResponse>> getVideos() {
+        return ResponseEntity.ok(videoService.getVideos());
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<VideoInfoResponse> getVideoInfo(@RequestParam("videoId") Long videoId) {
+        return ResponseEntity.ok(videoService.getVideoInfo(videoId));
+    }
 }
