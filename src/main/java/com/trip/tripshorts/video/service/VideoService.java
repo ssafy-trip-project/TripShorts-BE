@@ -5,10 +5,7 @@ import com.trip.tripshorts.member.domain.Member;
 import com.trip.tripshorts.member.repository.MemberRepository;
 import com.trip.tripshorts.tour.domain.Tour;
 import com.trip.tripshorts.video.domain.Video;
-import com.trip.tripshorts.video.dto.VideoCreateRequest;
-import com.trip.tripshorts.video.dto.VideoCreateResponse;
-import com.trip.tripshorts.video.dto.VideoInfoResponse;
-import com.trip.tripshorts.video.dto.VideoListResponse;
+import com.trip.tripshorts.video.dto.*;
 import com.trip.tripshorts.video.repository.VideoRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -56,5 +53,34 @@ public class VideoService {
                 .orElseThrow(() -> new EntityNotFoundException("Tour not found for video id: " + videoId));
 
         return new VideoInfoResponse(videoId, tour);
+    }
+
+    @Transactional(readOnly = true)
+    public VideoPageResponse getVideoPage(Long cursorId, int size) {
+        log.debug("Fetching videos with cursorId: {}, size: {}", cursorId, size);
+        Member currentMember = authService.getCurrentMember();
+
+        List<Video> videos = videoRepository.findVideosByCursorId(cursorId, size+1);
+
+        log.debug("Found videos with ids: {}",
+                videos.stream()
+                        .map(Video::getId)
+                        .toList());
+
+        boolean hasNext = videos.size() > size;
+        if(hasNext){
+            videos.subList(0, videos.size()-1);
+        }
+
+        List<VideoResponse> videoResponses = videos.stream()
+                .map(video -> VideoResponse.from(video, currentMember))
+                .toList();
+
+        Long lastVideoId = videos.isEmpty() ? null : videos.get(videos.size()-1).getId();
+
+        log.debug("Returning response with nextCursor: {}, hasNext: {}",
+                lastVideoId, hasNext);
+
+        return VideoPageResponse.of(videoResponses, lastVideoId, hasNext);
     }
 }

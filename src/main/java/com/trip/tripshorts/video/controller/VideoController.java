@@ -1,9 +1,8 @@
 package com.trip.tripshorts.video.controller;
 
-import com.trip.tripshorts.video.dto.VideoCreateRequest;
-import com.trip.tripshorts.video.dto.VideoCreateResponse;
-import com.trip.tripshorts.video.dto.VideoInfoResponse;
-import com.trip.tripshorts.video.dto.VideoListResponse;
+import com.trip.tripshorts.auth.service.AuthService;
+import com.trip.tripshorts.member.domain.Member;
+import com.trip.tripshorts.video.dto.*;
 import com.trip.tripshorts.video.service.VideoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +20,7 @@ import java.util.Map;
 public class VideoController {
 
     private final VideoService videoService;
+    private final AuthService authService;
 
     @GetMapping("/presigned-url")
     public ResponseEntity<Map<String, String>> getPresignedUrl(
@@ -49,4 +49,14 @@ public class VideoController {
     public ResponseEntity<VideoInfoResponse> getVideoInfo(@RequestParam("videoId") Long videoId) {
         return ResponseEntity.ok(videoService.getVideoInfo(videoId));
     }
+
+    @GetMapping("/feed")
+    public ResponseEntity<VideoPageResponse> getVideoPages(
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam int size
+    ){
+        log.info("pagination controller in");
+        return ResponseEntity.ok(videoService.getVideoPage(cursorId, size));
+    }
+
 }
