@@ -25,8 +25,8 @@ public class VideoService {
     private final MemberRepository memberRepository;
     private final AuthService authService;
 
-    public String getPresignedUrl(String filename, String contentType) {
-        return s3Service.generatePresignedUrl(filename, contentType);
+    public String getPresignedUrlForUpload(String filename, String contentType) {
+        return s3Service.generatePresignedUrlForUpload(filename, contentType);
     }
 
     @Transactional
@@ -69,11 +69,27 @@ public class VideoService {
 
         boolean hasNext = videos.size() > size;
         if(hasNext){
-            videos.subList(0, videos.size()-1);
+            videos = videos.subList(0, videos.size()-1);
         }
 
         List<VideoResponse> videoResponses = videos.stream()
-                .map(video -> VideoResponse.from(video, currentMember))
+                .map(video -> {
+                    log.debug(video.getVideoUrl());
+                    String videoKey = extractKeyFromUrl(video.getVideoUrl());
+                    String thumbnailKey = extractKeyFromUrl(video.getThumbnailUrl());
+                    log.debug("videokey = {}", videoKey);
+                    return VideoResponse.builder()
+                            .id(video.getId())
+                            .videoUrl(s3Service.generatePresignedUrlForDownload(videoKey))
+                            .thumbnailUrl(s3Service.generatePresignedUrlForDownload(thumbnailKey))
+                            .creator(VideoCreatorDto.from(video.getMember()))
+                            .likeCount(video.getLikes().size())
+                            .commentCount(video.getComments().size())
+                            .createdAt(video.getCreatedDate())
+                            .liked(video.getLikes().stream()
+                                    .anyMatch(like -> like.getMember().getId().equals(currentMember.getId())))
+                            .build();
+                })
                 .toList();
 
         Long lastVideoId = videos.isEmpty() ? null : videos.get(videos.size()-1).getId();
@@ -82,5 +98,14 @@ public class VideoService {
                 lastVideoId, hasNext);
 
         return VideoPageResponse.of(videoResponses, lastVideoId, hasNext);
+    }
+
+    private String extractKeyFromUrl(String url) {
+        try {
+            return url.split("cloudfront.net/")[1];
+        } catch (Exception e) {
+            log.error("Failed to extract key from URL: {}", url, e);
+            throw new IllegalArgumentException("Failed to extract key from URL", e);
+        }
     }
 }

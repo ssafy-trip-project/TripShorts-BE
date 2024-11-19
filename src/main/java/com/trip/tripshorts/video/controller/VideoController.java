@@ -23,10 +23,10 @@ public class VideoController {
     private final AuthService authService;
 
     @GetMapping("/presigned-url")
-    public ResponseEntity<Map<String, String>> getPresignedUrl(
+    public ResponseEntity<Map<String, String>> getPresignedUrlForUpload(
             @RequestParam String filename,
             @RequestParam String contentType) {
-        String presignedUrl = videoService.getPresignedUrl(filename, contentType);
+        String presignedUrl = videoService.getPresignedUrlForUpload(filename, contentType);
         log.info(presignedUrl);
         Map<String, String> response = new HashMap<>();
         response.put("presignedUrl", presignedUrl);
