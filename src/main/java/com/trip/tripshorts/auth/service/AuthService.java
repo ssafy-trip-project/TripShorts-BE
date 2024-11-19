@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -105,5 +106,26 @@ public class AuthService {
         } catch (RestClientException e) {
             throw new RuntimeException("Failed to fetch user info", e);
         }
+    }
+
+    private String getCurrentUserEmail() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof UserPrincipal) {
+            return ((UserPrincipal) principal).getEmail();
+        } else if (principal instanceof String) {
+            return (String) principal;
+        }
+        throw new RuntimeException("Unknown principal type: " + principal.getClass());
+    }
+
+    public Member getCurrentMember() {
+        String email = getCurrentUserEmail();
+        return memberRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Member not found"));
+    }
+
+    public Long getCurrentMemberId() {
+        return getCurrentMember().getId();
     }
 }

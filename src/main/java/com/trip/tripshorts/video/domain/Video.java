@@ -6,8 +6,7 @@ import com.trip.tripshorts.member.domain.Member;
 import com.trip.tripshorts.tour.domain.Tour;
 import com.trip.tripshorts.util.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +15,8 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 public class Video extends BaseTimeEntity {
 
     @Id
