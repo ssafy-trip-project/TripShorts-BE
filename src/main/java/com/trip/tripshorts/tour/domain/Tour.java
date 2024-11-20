@@ -21,13 +21,13 @@ public class Tour {
     private String title;
     private String address;
 
-    @Column(name = "area_code")
-    private int areaCode;
-
-    @Column(name = "si_gun_gu_code")
-    private int siGunGuCode;
     private double lat;
     private double lng;
+
+    @Column(name="area_name")
+    private String areaName;
+    @Column(name="district_name")
+    private String districtName;
 
     @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Video> videos = new ArrayList<>();
