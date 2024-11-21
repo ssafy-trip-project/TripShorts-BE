@@ -4,6 +4,7 @@ import com.trip.tripshorts.auth.service.AuthService;
 import com.trip.tripshorts.member.domain.Member;
 import com.trip.tripshorts.member.repository.MemberRepository;
 import com.trip.tripshorts.tour.domain.Tour;
+import com.trip.tripshorts.tour.repository.TourRepository;
 import com.trip.tripshorts.video.domain.Video;
 import com.trip.tripshorts.video.dto.*;
 import com.trip.tripshorts.video.repository.VideoRepository;
@@ -24,6 +25,7 @@ public class VideoService {
     private final S3Service s3Service;
     private final MemberRepository memberRepository;
     private final AuthService authService;
+    private final TourRepository tourRepository;
 
     public String getPresignedUrlForUpload(String filename, String contentType) {
         return s3Service.generatePresignedUrlForUpload(filename, contentType);
@@ -32,11 +34,14 @@ public class VideoService {
     @Transactional
     public VideoCreateResponse createVideo(VideoCreateRequest videoCreateRequest) {
         Member member = authService.getCurrentMember();
+        Tour tour = tourRepository.findById(videoCreateRequest.getTourId())
+                .orElseThrow(()-> new EntityNotFoundException("해당 관광지를 찾을 수 없습니다."));
 
         Video video = Video.builder()
                 .videoUrl(videoCreateRequest.getVideoUrl())
                 .thumbnailUrl(videoCreateRequest.getThumbnailUrl())
                 .member(member)
+                .tour(tour)
                 .build();
 
         return VideoCreateResponse.from(videoRepository.save(video));

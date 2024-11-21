@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class VideoCreateRequest {
     private String videoUrl;
     private String thumbnailUrl;
+    private Long tourId;
 }
