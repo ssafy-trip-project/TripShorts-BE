@@ -2,6 +2,7 @@ package com.trip.tripshorts.member.domain;
 
 import com.trip.tripshorts.comment.domain.Comment;
 import com.trip.tripshorts.good.domain.Good;
+import com.trip.tripshorts.member.dto.MemberImageUrl;
 import com.trip.tripshorts.util.BaseTimeEntity;
 import com.trip.tripshorts.video.domain.Video;
 import jakarta.persistence.*;
@@ -50,5 +51,13 @@ public class Member extends BaseTimeEntity {
     public void addComment(Comment comment) {
         comments.add(comment);
         comment.setMember(this);
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 }
