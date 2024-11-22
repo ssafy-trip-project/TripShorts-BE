@@ -36,4 +36,19 @@ public class CommentService {
         log.debug("getComment service 정상 반응");
         return comments;
     };
+
+    @Transactional
+    public void createComment(Long videoId, CommentRequest commentRequest) {
+        Member member = authService.getCurrentMember();
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(()-> new EntityNotFoundException("Video not found"));
+
+        Comment comment = Comment.builder()
+                .content(commentRequest.content())
+                .video(video)
+                .member(member)
+                .build();
+
+        commentRepository.save(comment);
+    }
 }

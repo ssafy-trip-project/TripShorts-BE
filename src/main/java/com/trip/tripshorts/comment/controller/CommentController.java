@@ -26,4 +26,10 @@ public class CommentController {
         List<CommentResponse> comments = commentService.getCommentList(videoId);
         return ResponseEntity.ok(comments);
     }
+
+    @PostMapping("/{videoId}/comment")
+    public ResponseEntity<Void> createComment(@PathVariable Long videoId, @RequestBody CommentRequest commentRequest){
+        commentService.createComment(videoId, commentRequest);
+        return ResponseEntity.ok().build();
+    }
 }
