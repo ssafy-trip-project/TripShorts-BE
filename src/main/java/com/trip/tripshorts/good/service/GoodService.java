@@ -2,6 +2,7 @@ package com.trip.tripshorts.good.service;
 
 import com.trip.tripshorts.auth.service.AuthService;
 import com.trip.tripshorts.good.domain.Good;
+import com.trip.tripshorts.good.dto.GoodStatusResponse;
 import com.trip.tripshorts.good.repository.GoodRepository;
 import com.trip.tripshorts.member.domain.Member;
 import com.trip.tripshorts.video.domain.Video;
@@ -9,6 +10,7 @@ import com.trip.tripshorts.video.repository.VideoRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -19,6 +21,7 @@ public class GoodService {
     private final VideoRepository videoRepository;
     private final GoodRepository goodRepository;
 
+    @Transactional
     public void addGood(Long videoId) {
         Member member = authService.getCurrentMember();
         Video video = videoRepository.findById(videoId)
@@ -36,6 +39,7 @@ public class GoodService {
         goodRepository.save(good);
     }
 
+    @Transactional
     public void removeGood(Long videoId) {
         Member member = authService.getCurrentMember();
         Video video = videoRepository.findById(videoId)
@@ -47,5 +51,18 @@ public class GoodService {
         video.removeLike(good);
         member.removeLike(good);
         goodRepository.delete(good);
+    }
+
+    @Transactional(readOnly = true)
+    public GoodStatusResponse getGoodStatus(Long videoId) {
+        Member member = authService.getCurrentMember();
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        boolean liked = goodRepository.existsByVideoAndMember(video, member);
+        return GoodStatusResponse.builder()
+                .liked(liked)
+                .totalLikes(video.getLikes().size())
+                .build();
     }
 }

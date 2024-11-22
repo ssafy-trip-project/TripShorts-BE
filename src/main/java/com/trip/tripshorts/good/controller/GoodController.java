@@ -1,5 +1,6 @@
 package com.trip.tripshorts.good.controller;
 
+import com.trip.tripshorts.good.dto.GoodStatusResponse;
 import com.trip.tripshorts.good.service.GoodService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,5 +26,12 @@ public class GoodController {
         log.debug("Removing good {}", videoId);
         goodService.removeGood(videoId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{videoId}/status")
+    public ResponseEntity<GoodStatusResponse> getGoodStatus(@PathVariable Long videoId) {
+        log.debug("Get good status {}", videoId);
+        GoodStatusResponse goodStatusResponse = goodService.getGoodStatus(videoId);
+        return ResponseEntity.ok(goodStatusResponse);
     }
 }

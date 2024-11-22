@@ -11,4 +11,6 @@ import java.util.Optional;
 @Repository
 public interface GoodRepository extends JpaRepository<Good, Long> {
     Optional<Good> findByVideoAndMember(Video video, Member member);
+
+    boolean existsByVideoAndMember(Video video, Member member);
 }
