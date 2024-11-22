@@ -35,4 +35,17 @@ public class GoodService {
         member.addLike(good);
         goodRepository.save(good);
     }
+
+    public void removeGood(Long videoId) {
+        Member member = authService.getCurrentMember();
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        Good good = goodRepository.findByVideoAndMember(video, member)
+                .orElseThrow(EntityNotFoundException::new);
+
+        video.removeLike(good);
+        member.removeLike(good);
+        goodRepository.delete(good);
+    }
 }

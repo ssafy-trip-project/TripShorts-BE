@@ -4,10 +4,7 @@ import com.trip.tripshorts.good.service.GoodService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/goods")
@@ -19,8 +16,14 @@ public class GoodController {
     @PostMapping("/{videoId}/like")
     public ResponseEntity<Void> addGood(@PathVariable Long videoId) {
         log.debug("Adding good {}", videoId);
-        System.out.println("Adding good : "+ videoId);
         goodService.addGood(videoId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{videoId}/like")
+    public ResponseEntity<Void> removeGood(@PathVariable Long videoId) {
+        log.debug("Removing good {}", videoId);
+        goodService.removeGood(videoId);
         return ResponseEntity.ok().build();
     }
 }

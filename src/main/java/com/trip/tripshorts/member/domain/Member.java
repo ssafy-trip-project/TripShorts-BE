@@ -64,4 +64,9 @@ public class Member extends BaseTimeEntity {
         likes.add(good);
         good.setMember(this);
     }
+
+    public void removeLike(Good good){
+        this.likes.remove(good);
+        good.setMember(null);
+    }
 }
