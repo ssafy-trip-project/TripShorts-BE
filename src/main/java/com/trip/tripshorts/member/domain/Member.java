@@ -50,7 +50,6 @@ public class Member extends BaseTimeEntity {
 
     public void addComment(Comment comment) {
         comments.add(comment);
-        comment.setMember(this);
     }
 
     public void setImageUrl(String imageUrl) {

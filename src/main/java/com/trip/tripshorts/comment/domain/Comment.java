@@ -1,15 +1,17 @@
 package com.trip.tripshorts.comment.domain;
 
 import com.trip.tripshorts.member.domain.Member;
+import com.trip.tripshorts.util.BaseTimeEntity;
 import com.trip.tripshorts.video.domain.Video;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
-@NoArgsConstructor
-public class Comment {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+public class Comment extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")

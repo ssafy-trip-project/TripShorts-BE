@@ -2,28 +2,34 @@ package com.trip.tripshorts.comment.controller;
 
 import com.trip.tripshorts.auth.domain.UserPrincipal;
 import com.trip.tripshorts.comment.dto.CommentRequest;
+import com.trip.tripshorts.comment.dto.CommentResponse;
 import com.trip.tripshorts.comment.service.CommentService;
 import com.trip.tripshorts.video.service.VideoService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/shorts")
+@RequestMapping("/api/v1/shorts")
 @RequiredArgsConstructor
+@Slf4j
 public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping("/videoId")
-    public ResponseEntity<Void> saveComment(@RequestParam("videoId") Long videoId,
-                                            @RequestBody CommentRequest commentRequest,
-                                            @AuthenticationPrincipal UserPrincipal userInfo) {
+    @GetMapping("/{videoId}/comments")
+    public ResponseEntity<List<CommentResponse>> getCommentList(@PathVariable Long videoId){
+        List<CommentResponse> comments = commentService.getCommentList(videoId);
+        return ResponseEntity.ok(comments);
+    }
 
-        commentService.saveComment(userInfo.getEmail(), videoId, commentRequest.content());
-
+    @PostMapping("/{videoId}/comment")
+    public ResponseEntity<Void> createComment(@PathVariable Long videoId, @RequestBody CommentRequest commentRequest){
+        commentService.createComment(videoId, commentRequest);
         return ResponseEntity.ok().build();
-
     }
 }
