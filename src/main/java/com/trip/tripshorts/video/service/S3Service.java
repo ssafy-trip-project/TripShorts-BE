@@ -49,4 +49,18 @@ public class S3Service {
 
         return amazonS3.generatePresignedUrl(request).toString();
     }
+
+    public String generatePresignedUrlForImgUpload(String originalFilename, String contentType) {
+        String fileKey = "videos/profile/" + UUID.randomUUID() + "-" + originalFilename;
+        log.info("Generating presigned URL for bucket: {}, fileKey: {}", bucket, fileKey);
+
+        GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucket, fileKey)
+                .withMethod(HttpMethod.PUT)
+                .withContentType(contentType);
+
+        // 현재 시간으로부터 10분 후로 만료 시간 설정
+        request.setExpiration(Date.from(Instant.now().plus(Duration.ofMinutes(10))));
+
+        return amazonS3.generatePresignedUrl(request).toString();
+    }
 }
