@@ -42,12 +42,15 @@ public class CommentService {
         Member member = authService.getCurrentMember();
         Video video = videoRepository.findById(videoId)
                 .orElseThrow(()-> new EntityNotFoundException("Video not found"));
-
+        
         Comment comment = Comment.builder()
                 .content(commentRequest.content())
                 .video(video)
                 .member(member)
                 .build();
+
+        member.addComment(comment);
+        video.addComment(comment);
 
         commentRepository.save(comment);
     }

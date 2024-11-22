@@ -43,6 +43,5 @@ public class Video extends BaseTimeEntity {
 
     public void addComment(Comment comment) {
         comments.add(comment);
-        comment.setVideo(this);
     }
 }
