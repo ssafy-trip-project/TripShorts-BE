@@ -3,19 +3,18 @@ package com.trip.tripshorts.good.domain;
 import com.trip.tripshorts.member.domain.Member;
 import com.trip.tripshorts.video.domain.Video;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 public class Good {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "good_id")
     private Long id;
-
-    private int count;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "video_id")
@@ -24,4 +23,16 @@ public class Good {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
+
+    public static Good createGood(){
+        return new Good();
+    }
+
+    public void setVideo(Video video) {
+        this.video = video;
+    }
+
+    public void setMember(Member member) {
+        this.member = member;
+    }
 }
