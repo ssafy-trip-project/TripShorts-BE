@@ -34,7 +34,7 @@ jobs:
         run: mkdir -p src/main/resources
 
       - name: Copy config files
-        run: find config -type f ! -name 'readme.md' -exec cp -t src/main/resources/ {} +
+        run: find config -type f ! -name 'readme.md' -exec cp -f -t src/main/resources/ {} +
 
       - name: Build with Gradle
         run: ./gradlew build -x test
