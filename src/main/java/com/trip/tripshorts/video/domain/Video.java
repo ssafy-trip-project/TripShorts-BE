@@ -44,4 +44,14 @@ public class Video extends BaseTimeEntity {
     public void addComment(Comment comment) {
         comments.add(comment);
     }
+
+    public void addLike(Good good){
+        this.likes.add(good);
+        good.setVideo(this);
+    }
+
+    public void removeLike(Good good) {
+        this.likes.remove(good);
+        good.setMember(null);
+    }
 }
