@@ -124,8 +124,6 @@ public class VideoService {
         Video video = videoRepository.findById(videoId)
                 .orElseThrow(() -> new EntityNotFoundException("Video not found: " + videoId));
 
-        System.out.println(video.getViewCount());
-
         video.raiseView();
     }
 }
