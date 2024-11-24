@@ -48,8 +48,13 @@ public class VideoService {
     }
 
     @Transactional(readOnly = true)
-    public List<VideoListResponse> getVideos() {
-        return videoRepository.fetchVideoList();
+    public List<VideoListResponse> getVideos(String sortBy) {
+        return switch (sortBy) {
+            case "recent" -> videoRepository.findAllOrderByCreatedDateDesc();
+            case "likes" -> videoRepository.findAllOrderByLikesDesc();
+            case "views" -> videoRepository.findAllOrderByViewCountDesc();
+            default -> videoRepository.findAllOrderByCreatedDateDesc();
+        };
     }
 
 
@@ -112,5 +117,13 @@ public class VideoService {
             log.error("Failed to extract key from URL: {}", url, e);
             throw new IllegalArgumentException("Failed to extract key from URL", e);
         }
+    }
+
+    @Transactional
+    public void increaseView(Long videoId) {
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(() -> new EntityNotFoundException("Video not found: " + videoId));
+
+        video.raiseView();
     }
 }

@@ -12,4 +12,5 @@ public class VideoListResponse {
     private String nickname;
     private String profileImageUrl;
     private int likeCount;
+    private Long viewCount;
 }
