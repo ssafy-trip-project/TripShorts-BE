@@ -198,6 +198,10 @@ public class VideoService {
             throw new IllegalArgumentException("Illegal User for this video: " + videoId);
         }
 
+        currentMember.getVideos().remove(video);
+        Tour tour = video.getTour();
+        tour.getVideos().remove(video);
+
         videoRepository.delete(video);
         return;
     }
