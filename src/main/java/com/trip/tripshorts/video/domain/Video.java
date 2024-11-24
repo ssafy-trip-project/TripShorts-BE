@@ -27,6 +27,9 @@ public class Video extends BaseTimeEntity {
     private String videoUrl;
     private String thumbnailUrl;
 
+    @Builder.Default
+    private Long viewCount = 0L;
+
     @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Good> likes = new ArrayList<>();
 
@@ -53,5 +56,9 @@ public class Video extends BaseTimeEntity {
     public void removeLike(Good good) {
         this.likes.remove(good);
         good.setMember(null);
+    }
+
+    public void raiseView() {
+        this.viewCount++;
     }
 }

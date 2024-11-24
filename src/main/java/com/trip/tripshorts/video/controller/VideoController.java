@@ -2,7 +2,9 @@ package com.trip.tripshorts.video.controller;
 
 import com.trip.tripshorts.auth.service.AuthService;
 import com.trip.tripshorts.member.domain.Member;
+import com.trip.tripshorts.video.domain.Video;
 import com.trip.tripshorts.video.dto.*;
+import com.trip.tripshorts.video.repository.VideoRepository;
 import com.trip.tripshorts.video.service.VideoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +45,13 @@ public class VideoController {
     @GetMapping
     public ResponseEntity<List<VideoListResponse>> getVideos(@RequestParam("sortby") String sortBy) {
         return ResponseEntity.ok(videoService.getVideos(sortBy));
+    }
+
+    @PostMapping("/{videoId}/view")
+    public ResponseEntity<?> increaseView(@PathVariable Long videoId) {
+        videoService.increaseView(videoId);
+
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/search")

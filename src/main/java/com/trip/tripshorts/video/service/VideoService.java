@@ -118,4 +118,14 @@ public class VideoService {
             throw new IllegalArgumentException("Failed to extract key from URL", e);
         }
     }
+
+    @Transactional
+    public void increaseView(Long videoId) {
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(() -> new EntityNotFoundException("Video not found: " + videoId));
+
+        System.out.println(video.getViewCount());
+
+        video.raiseView();
+    }
 }
