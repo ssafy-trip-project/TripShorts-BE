@@ -78,4 +78,12 @@ public class VideoController {
         return ResponseEntity.ok(myVideos);
     }
 
+
+    @GetMapping("/my-videos/feed")
+    public ResponseEntity<VideoPageResponse> getMyVideoPages(
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(defaultValue="6") int size
+    ){
+        return ResponseEntity.ok(videoService.getMyVideoPages(cursorId, size));
+    }
 }

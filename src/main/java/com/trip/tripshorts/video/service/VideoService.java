@@ -158,4 +158,34 @@ public class VideoService {
                 hasNext
         );
     }
+
+    public VideoPageResponse getMyVideoPages(Long cursorId, int size) {
+        Member currentMember = authService.getCurrentMember();
+        List<Video> videos = videoRepository.findMyVideosByCursor(
+                currentMember.getId(),
+                cursorId,
+                size + 1
+        );
+        boolean hasNext = videos.size() > size;
+        List<Video> pagedVideos = hasNext ? videos.subList(0, size) : videos;
+
+        List<VideoResponse> videoResponses = pagedVideos.stream()
+                .map(video -> VideoResponse.builder()
+                        .id(video.getId())
+                        .videoUrl(video.getVideoUrl())
+                        .thumbnailUrl(video.getThumbnailUrl())
+                        .creator(VideoCreatorDto.from(video.getMember()))
+                        .likeCount(video.getLikes().size())
+                        .commentCount(video.getComments().size())
+                        .createdAt(video.getCreatedDate())
+                        .liked(video.getLikes().stream()
+                                .anyMatch(like -> like.getMember().getId().equals(currentMember.getId())))
+                        .build())
+                .toList();
+
+        Long lastVideoId = videoResponses.isEmpty() ? null :
+                videoResponses.get(videoResponses.size()-1).getId();
+
+        return VideoPageResponse.of(videoResponses, lastVideoId, hasNext);
+    }
 }
