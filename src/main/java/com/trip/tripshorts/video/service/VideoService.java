@@ -188,4 +188,17 @@ public class VideoService {
 
         return VideoPageResponse.of(videoResponses, lastVideoId, hasNext);
     }
+
+    public void deleteVideo(Long videoId) {
+        Member currentMember = authService.getCurrentMember();
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(() -> new IllegalArgumentException("Failed to find video with id: " + videoId));
+
+        if(!currentMember.equals(video.getMember())) {
+            throw new IllegalArgumentException("Illegal User for this video: " + videoId);
+        }
+
+        videoRepository.delete(video);
+        return;
+    }
 }

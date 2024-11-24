@@ -82,8 +82,14 @@ public class VideoController {
     @GetMapping("/my-videos/feed")
     public ResponseEntity<VideoPageResponse> getMyVideoPages(
             @RequestParam(required = false) Long cursorId,
-            @RequestParam(defaultValue="6") int size
+            @RequestParam int size
     ){
         return ResponseEntity.ok(videoService.getMyVideoPages(cursorId, size));
+    }
+
+    @DeleteMapping("/my-videos/{videoId}")
+    public ResponseEntity<Void> deleteVideo(@PathVariable Long videoId) {
+        videoService.deleteVideo(videoId);
+        return ResponseEntity.ok().build();
     }
 }
