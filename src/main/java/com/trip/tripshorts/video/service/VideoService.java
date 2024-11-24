@@ -152,6 +152,7 @@ public class VideoService {
                 videoResponses.get(videoResponses.size() - 1).getVideoId();
 
         return MyVideoPageResponse.of(
+                currentMember.getNickname(),
                 videoResponses,
                 lastVideoId,
                 hasNext
