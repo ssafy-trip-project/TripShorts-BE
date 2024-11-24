@@ -68,4 +68,28 @@ public class VideoController {
         return ResponseEntity.ok(videoService.getVideoPage(cursorId, size));
     }
 
+    @GetMapping("/my-videos")
+    public ResponseEntity<MyVideoPageResponse> getMyVideos(
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam int size
+    ) {
+        MyVideoPageResponse myVideos = videoService.getMyVideos(cursorId, size);
+        log.debug("videos Size: {}", myVideos.getVideos().size());
+        return ResponseEntity.ok(myVideos);
+    }
+
+
+    @GetMapping("/my-videos/feed")
+    public ResponseEntity<VideoPageResponse> getMyVideoPages(
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam int size
+    ){
+        return ResponseEntity.ok(videoService.getMyVideoPages(cursorId, size));
+    }
+
+    @DeleteMapping("/my-videos/{videoId}")
+    public ResponseEntity<Void> deleteVideo(@PathVariable Long videoId) {
+        videoService.deleteVideo(videoId);
+        return ResponseEntity.ok().build();
+    }
 }

@@ -126,4 +126,83 @@ public class VideoService {
 
         video.raiseView();
     }
+
+    public MyVideoPageResponse getMyVideos(Long cursorId, int size) {
+        Member currentMember = authService.getCurrentMember();
+
+        // size + 1로 다음 페이지 존재 여부 확인
+        List<Video> videos = videoRepository.findMyVideosByCursor(
+                currentMember.getId(),
+                cursorId,
+                size + 1
+        );
+
+        boolean hasNext = videos.size() > size;
+        List<Video> pagedVideos = hasNext ? videos.subList(0, size) : videos;
+
+        List<MyVideoListResponse> videoResponses = pagedVideos.stream()
+                .map(video -> MyVideoListResponse.builder()
+                        .videoId(video.getId())
+                        .thumbnailUrl(video.getThumbnailUrl())
+                        .tourName(video.getTour().getTitle())
+                        .build())
+                .toList();
+
+        Long lastVideoId = videoResponses.isEmpty() ? null :
+                videoResponses.get(videoResponses.size() - 1).getVideoId();
+
+        return MyVideoPageResponse.of(
+                currentMember.getNickname(),
+                videoResponses,
+                lastVideoId,
+                hasNext
+        );
+    }
+
+    public VideoPageResponse getMyVideoPages(Long cursorId, int size) {
+        Member currentMember = authService.getCurrentMember();
+        List<Video> videos = videoRepository.findMyVideosByCursor(
+                currentMember.getId(),
+                cursorId,
+                size + 1
+        );
+        boolean hasNext = videos.size() > size;
+        List<Video> pagedVideos = hasNext ? videos.subList(0, size) : videos;
+
+        List<VideoResponse> videoResponses = pagedVideos.stream()
+                .map(video -> VideoResponse.builder()
+                        .id(video.getId())
+                        .videoUrl(video.getVideoUrl())
+                        .thumbnailUrl(video.getThumbnailUrl())
+                        .creator(VideoCreatorDto.from(video.getMember()))
+                        .likeCount(video.getLikes().size())
+                        .commentCount(video.getComments().size())
+                        .createdAt(video.getCreatedDate())
+                        .liked(video.getLikes().stream()
+                                .anyMatch(like -> like.getMember().getId().equals(currentMember.getId())))
+                        .build())
+                .toList();
+
+        Long lastVideoId = videoResponses.isEmpty() ? null :
+                videoResponses.get(videoResponses.size()-1).getId();
+
+        return VideoPageResponse.of(videoResponses, lastVideoId, hasNext);
+    }
+
+    public void deleteVideo(Long videoId) {
+        Member currentMember = authService.getCurrentMember();
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(() -> new IllegalArgumentException("Failed to find video with id: " + videoId));
+
+        if(!currentMember.equals(video.getMember())) {
+            throw new IllegalArgumentException("Illegal User for this video: " + videoId);
+        }
+
+        currentMember.getVideos().remove(video);
+        Tour tour = video.getTour();
+        tour.getVideos().remove(video);
+
+        videoRepository.delete(video);
+        return;
+    }
 }
