@@ -16,8 +16,21 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
 
     @Query("SELECT new com.trip.tripshorts.video.dto.VideoListResponse(v.thumbnailUrl, m.nickname, m.imageUrl, SIZE(v.likes)) " +
             "FROM Video v " +
-            "JOIN v.member m")
-    List<VideoListResponse> fetchVideoList();
+            "JOIN v.member m " +
+            "ORDER BY v.createdDate DESC")
+    List<VideoListResponse> findAllOrderByCreatedDateDesc();
+
+    @Query("SELECT new com.trip.tripshorts.video.dto.VideoListResponse(v.thumbnailUrl, m.nickname, m.imageUrl, SIZE(v.likes)) " +
+            "FROM Video v " +
+            "JOIN v.member m " +
+            "ORDER BY SIZE(v.likes) DESC")
+    List<VideoListResponse> findAllOrderByLikesDesc();
+
+    @Query("SELECT new com.trip.tripshorts.video.dto.VideoListResponse(v.thumbnailUrl, m.nickname, m.imageUrl, SIZE(v.likes)) " +
+            "FROM Video v " +
+            "JOIN v.member m " +
+            "ORDER BY SIZE(v.likes) DESC")
+    List<VideoListResponse> findAllOrderByViewCountDesc();
 
     @Query("SELECT t FROM Video v " +
             "JOIN v.tour t " +

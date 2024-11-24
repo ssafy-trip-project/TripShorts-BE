@@ -41,8 +41,8 @@ public class VideoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<VideoListResponse>> getVideos() {
-        return ResponseEntity.ok(videoService.getVideos());
+    public ResponseEntity<List<VideoListResponse>> getVideos(@RequestParam("sortby") String sortBy) {
+        return ResponseEntity.ok(videoService.getVideos(sortBy));
     }
 
     @GetMapping("/search")

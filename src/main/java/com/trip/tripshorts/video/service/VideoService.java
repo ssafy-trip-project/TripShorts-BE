@@ -48,8 +48,13 @@ public class VideoService {
     }
 
     @Transactional(readOnly = true)
-    public List<VideoListResponse> getVideos() {
-        return videoRepository.fetchVideoList();
+    public List<VideoListResponse> getVideos(String sortBy) {
+        return switch (sortBy) {
+            case "recent" -> videoRepository.findAllOrderByCreatedDateDesc();
+            case "likes" -> videoRepository.findAllOrderByLikesDesc();
+            case "views" -> videoRepository.findAllOrderByViewCountDesc();
+            default -> videoRepository.findAllOrderByCreatedDateDesc();
+        };
     }
 
 
