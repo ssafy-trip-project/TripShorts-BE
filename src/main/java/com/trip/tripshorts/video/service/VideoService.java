@@ -126,4 +126,35 @@ public class VideoService {
 
         video.raiseView();
     }
+
+    public MyVideoPageResponse getMyVideos(Long cursorId, int size) {
+        Member currentMember = authService.getCurrentMember();
+
+        // size + 1로 다음 페이지 존재 여부 확인
+        List<Video> videos = videoRepository.findMyVideosByCursor(
+                currentMember.getId(),
+                cursorId,
+                size + 1
+        );
+
+        boolean hasNext = videos.size() > size;
+        List<Video> pagedVideos = hasNext ? videos.subList(0, size) : videos;
+
+        List<MyVideoListResponse> videoResponses = pagedVideos.stream()
+                .map(video -> MyVideoListResponse.builder()
+                        .videoId(video.getId())
+                        .thumbnailUrl(video.getThumbnailUrl())
+                        .tourName(video.getTour().getTitle())
+                        .build())
+                .toList();
+
+        Long lastVideoId = videoResponses.isEmpty() ? null :
+                videoResponses.get(videoResponses.size() - 1).getVideoId();
+
+        return MyVideoPageResponse.of(
+                videoResponses,
+                lastVideoId,
+                hasNext
+        );
+    }
 }

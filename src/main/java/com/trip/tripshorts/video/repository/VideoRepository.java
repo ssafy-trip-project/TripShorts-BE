@@ -43,4 +43,17 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
             "ORDER BY v.id DESC " +
             "LIMIT :size")
     List<Video> findVideosByCursorId(@Param("cursorId") Long cursorId, @Param("size") int size);
+
+    @Query("SELECT DISTINCT v FROM Video v " +
+            "LEFT JOIN FETCH v.member m " +
+            "LEFT JOIN FETCH v.tour t " +  // Tour 정보도 필요하므로 추가
+            "WHERE v.member.id = :memberId " +
+            "AND (:cursorId IS NULL OR v.id < :cursorId) " +
+            "ORDER BY v.id DESC " +
+            "LIMIT :size")
+    List<Video> findMyVideosByCursor(
+            @Param("memberId") Long memberId,
+            @Param("cursorId") Long cursorId,
+            @Param("size") int size
+    );
 }
