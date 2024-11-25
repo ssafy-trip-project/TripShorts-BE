@@ -66,7 +66,6 @@ public class VideoController {
             @RequestParam(required = false, defaultValue = "5") int size
     ){
         log.info("pagination controller in");
-        System.out.println("asd " + sortBy + " " + cursorId + " " + size);
         return ResponseEntity.ok(videoService.getVideoPage(sortBy, cursorId, size));
     }
 
