@@ -48,8 +48,8 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
             "LEFT JOIN FETCH v.member m " +
             "LEFT JOIN FETCH v.tour t " +
             "WHERE v.member.id = :memberId " +
-            "AND (:cursorId IS NULL OR v.id < :cursorId) " +  // 변경: < 에서 > 로
-            "ORDER BY v.id DESC " +  // DESC 유지
+            "AND (:cursorId IS NULL OR v.id < :cursorId) " +
+            "ORDER BY v.id DESC " +
             "LIMIT :size")
     List<Video> findMyVideosByCursor(
             @Param("memberId") Long memberId,
