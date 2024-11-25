@@ -1,8 +1,11 @@
 package com.trip.tripshorts.video.service;
 
+import com.trip.tripshorts.ai.dto.GeneratedTagsResponse;
+import com.trip.tripshorts.ai.service.OpenAiService;
 import com.trip.tripshorts.auth.service.AuthService;
 import com.trip.tripshorts.member.domain.Member;
 import com.trip.tripshorts.member.repository.MemberRepository;
+import com.trip.tripshorts.tag.repository.TagRepository;
 import com.trip.tripshorts.tour.domain.Tour;
 import com.trip.tripshorts.tour.repository.TourRepository;
 import com.trip.tripshorts.video.domain.Video;
@@ -14,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -26,6 +30,8 @@ public class VideoService {
     private final MemberRepository memberRepository;
     private final AuthService authService;
     private final TourRepository tourRepository;
+    private final OpenAiService openAiService;
+    private final TagRepository tagRepository;
 
     public String getPresignedUrlForUpload(String filename, String contentType) {
         return s3Service.generatePresignedUrlForUpload(filename, contentType);
@@ -37,12 +43,17 @@ public class VideoService {
         Tour tour = tourRepository.findById(videoCreateRequest.getTourId())
                 .orElseThrow(()-> new EntityNotFoundException("해당 관광지를 찾을 수 없습니다."));
 
+        GeneratedTagsResponse tagsResponse = openAiService.generateTags(tour.getTitle());
+
         Video video = Video.builder()
                 .videoUrl(videoCreateRequest.getVideoUrl())
                 .thumbnailUrl(videoCreateRequest.getThumbnailUrl())
                 .member(member)
                 .tour(tour)
+                .tags(new ArrayList<>())
                 .build();
+
+        video.addTags(tagsResponse.tags());
 
         return VideoCreateResponse.from(videoRepository.save(video));
     }
