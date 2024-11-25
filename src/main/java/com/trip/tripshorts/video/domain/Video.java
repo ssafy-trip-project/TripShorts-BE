@@ -3,6 +3,7 @@ package com.trip.tripshorts.video.domain;
 import com.trip.tripshorts.comment.domain.Comment;
 import com.trip.tripshorts.good.domain.Good;
 import com.trip.tripshorts.member.domain.Member;
+import com.trip.tripshorts.tag.domain.Tag;
 import com.trip.tripshorts.tour.domain.Tour;
 import com.trip.tripshorts.util.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -43,6 +44,19 @@ public class Video extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tour_id")
     private Tour tour;
+
+    @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Tag> tags = new ArrayList<>();
+
+    public void addTags(List<String> tagNames){
+        tagNames.forEach(tagName -> {
+            Tag tag = Tag.builder()
+                    .name(tagName)
+                    .video(this)
+                    .build();
+            this.tags.add(tag);
+        });
+    }
 
     public void addComment(Comment comment) {
         comments.add(comment);
