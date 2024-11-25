@@ -61,11 +61,13 @@ public class VideoController {
 
     @GetMapping("/feed")
     public ResponseEntity<VideoPageResponse> getVideoPages(
-            @RequestParam(required = false) Long cursorId,
-            @RequestParam int size
+            @RequestParam("sortby") String sortBy,
+            @RequestParam("lastid") Long lastVideoId,
+            @RequestParam(required = false, defaultValue = "5") int size
     ){
         log.info("pagination controller in");
-        return ResponseEntity.ok(videoService.getVideoPage(cursorId, size));
+        System.out.println(sortBy + " " + lastVideoId + " " + size);
+        return ResponseEntity.ok(videoService.getVideoPage(lastVideoId, size));
     }
 
     @GetMapping("/my-videos")
