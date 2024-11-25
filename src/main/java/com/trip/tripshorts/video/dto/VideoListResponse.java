@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class VideoListResponse {
+    private Long videoId;
     private String thumbnailUrl;
     private String nickname;
     private String profileImageUrl;

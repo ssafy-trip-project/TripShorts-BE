@@ -14,19 +14,19 @@ import java.util.Optional;
 public interface VideoRepository extends JpaRepository<Video, Long> {
     List<Video> findAllByMemberId(Long memberId);
 
-    @Query("SELECT new com.trip.tripshorts.video.dto.VideoListResponse(v.thumbnailUrl, m.nickname, m.imageUrl, SIZE(v.likes), v.viewCount) " +
+    @Query("SELECT new com.trip.tripshorts.video.dto.VideoListResponse(v.id, v.thumbnailUrl, m.nickname, m.imageUrl, SIZE(v.likes), v.viewCount) " +
             "FROM Video v " +
             "JOIN v.member m " +
             "ORDER BY v.createdDate DESC")
     List<VideoListResponse> findAllOrderByCreatedDateDesc();
 
-    @Query("SELECT new com.trip.tripshorts.video.dto.VideoListResponse(v.thumbnailUrl, m.nickname, m.imageUrl, SIZE(v.likes), v.viewCount) " +
+    @Query("SELECT new com.trip.tripshorts.video.dto.VideoListResponse(v.id, v.thumbnailUrl, m.nickname, m.imageUrl, SIZE(v.likes), v.viewCount) " +
             "FROM Video v " +
             "JOIN v.member m " +
             "ORDER BY SIZE(v.likes) DESC")
     List<VideoListResponse> findAllOrderByLikesDesc();
 
-    @Query("SELECT new com.trip.tripshorts.video.dto.VideoListResponse(v.thumbnailUrl, m.nickname, m.imageUrl, SIZE(v.likes), v.viewCount) " +
+    @Query("SELECT new com.trip.tripshorts.video.dto.VideoListResponse(v.id, v.thumbnailUrl, m.nickname, m.imageUrl, SIZE(v.likes), v.viewCount) " +
             "FROM Video v " +
             "JOIN v.member m " +
             "ORDER BY v.viewCount DESC")
