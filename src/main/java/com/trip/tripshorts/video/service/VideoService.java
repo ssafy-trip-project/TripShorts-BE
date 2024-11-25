@@ -77,11 +77,17 @@ public class VideoService {
     }
 
     @Transactional(readOnly = true)
-    public VideoPageResponse getVideoPage(Long cursorId, int size) {
+    public VideoPageResponse getVideoPage(String sortBy, Long cursorId, int size) {
         log.debug("Fetching videos with cursorId: {}, size: {}", cursorId, size);
         Member currentMember = authService.getCurrentMember();
 
-        List<Video> videos = videoRepository.findVideosByCursorId(cursorId, size+1);
+        List<Video> videos = switch (sortBy) {
+            case "recent" -> videoRepository.findTopByRecent(cursorId, size+1);
+            case "likes" -> videoRepository.findTopByLikes(cursorId, size+1);
+            case "views" -> videoRepository.findTopByViews(cursorId, size+1);
+            default -> videoRepository.findTopByRecent(cursorId, size+1);
+        };
+
 
         log.debug("Found videos with ids: {}",
                 videos.stream()
@@ -89,6 +95,7 @@ public class VideoService {
                         .toList());
 
         boolean hasNext = videos.size() > size;
+        Long lastVideoId = videos.isEmpty() ? null : videos.get(videos.size()-1).getId();
         if(hasNext){
             videos = videos.subList(0, videos.size()-1);
         }
@@ -112,8 +119,6 @@ public class VideoService {
                             .build();
                 })
                 .toList();
-
-        Long lastVideoId = videos.isEmpty() ? null : videos.get(videos.size()-1).getId();
 
         log.debug("Returning response with nextCursor: {}, hasNext: {}",
                 lastVideoId, hasNext);
