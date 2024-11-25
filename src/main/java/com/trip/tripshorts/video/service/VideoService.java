@@ -162,7 +162,6 @@ public class VideoService {
     public VideoPageResponse getMyVideoPages(Long cursorId, Long initialVideoId, int size) {
         Member currentMember = authService.getCurrentMember();
 
-        // initialVideoId가 있으면 더 큰 ID부터 가져오도록 수정
         if(initialVideoId != null && cursorId == null){
             cursorId = initialVideoId+1;  // 변경
         }

@@ -17,6 +17,7 @@ public class GoodController {
     @PostMapping("/{videoId}/like")
     public ResponseEntity<Void> addGood(@PathVariable Long videoId) {
         log.debug("Adding good {}", videoId);
+        System.out.println("좋아요 눌렀네요 ");
         goodService.addGood(videoId);
         return ResponseEntity.ok().build();
     }
