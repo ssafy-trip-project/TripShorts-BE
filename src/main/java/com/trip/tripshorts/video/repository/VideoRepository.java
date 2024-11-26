@@ -14,19 +14,51 @@ import java.util.Optional;
 public interface VideoRepository extends JpaRepository<Video, Long> {
     List<Video> findAllByMemberId(Long memberId);
 
-    @Query("SELECT new com.trip.tripshorts.video.dto.VideoListResponse(v.thumbnailUrl, m.nickname, m.imageUrl, SIZE(v.likes), v.viewCount) " +
+    @Query("SELECT new com.trip.tripshorts.video.dto.VideoListResponse(v.id, v.thumbnailUrl, m.nickname, m.imageUrl, SIZE(v.likes), v.viewCount) " +
             "FROM Video v " +
             "JOIN v.member m " +
             "ORDER BY v.createdDate DESC")
     List<VideoListResponse> findAllOrderByCreatedDateDesc();
 
-    @Query("SELECT new com.trip.tripshorts.video.dto.VideoListResponse(v.thumbnailUrl, m.nickname, m.imageUrl, SIZE(v.likes), v.viewCount) " +
+    @Query("SELECT new com.trip.tripshorts.video.dto.VideoListResponse(v.id, v.thumbnailUrl, m.nickname, m.imageUrl, SIZE(v.likes), v.viewCount) " +
             "FROM Video v " +
             "JOIN v.member m " +
             "ORDER BY SIZE(v.likes) DESC")
     List<VideoListResponse> findAllOrderByLikesDesc();
 
-    @Query("SELECT new com.trip.tripshorts.video.dto.VideoListResponse(v.thumbnailUrl, m.nickname, m.imageUrl, SIZE(v.likes), v.viewCount) " +
+    // 최신순 정렬
+    @Query("""
+        SELECT v 
+        FROM Video v 
+        WHERE v.createdDate <= (SELECT v2.createdDate FROM Video v2 WHERE v2.id = :cursorId) 
+        ORDER BY v.createdDate DESC
+        LIMIT :size
+    """)
+    List<Video> findTopByRecent(@Param("cursorId") Long cursorId, @Param("size") int size);
+
+    @Query("""
+        SELECT v FROM Video v 
+        WHERE 
+            SIZE(v.likes) < (SELECT SIZE(v2.likes) FROM Video v2 WHERE v2.id = :cursorId) 
+            OR (
+                SIZE(v.likes) = (SELECT SIZE(v2.likes) FROM Video v2 WHERE v2.id = :cursorId)
+                AND v.viewCount <= (SELECT v2.viewCount FROM Video v2 WHERE v2.id = :cursorId)
+            )
+        ORDER BY SIZE(v.likes) DESC, v.viewCount DESC
+        LIMIT :size
+    """)
+    List<Video> findTopByLikes(@Param("cursorId") Long cursorId, @Param("size") int size);
+
+    @Query("""
+        SELECT v 
+        FROM Video v 
+        WHERE v.viewCount <= (SELECT v2.viewCount FROM Video v2 WHERE v2.id = :cursorId) 
+        ORDER BY v.viewCount DESC
+        LIMIT :size
+    """)
+    List<Video> findTopByViews(@Param("cursorId") Long cursorId, @Param("size") int size);
+
+    @Query("SELECT new com.trip.tripshorts.video.dto.VideoListResponse(v.id, v.thumbnailUrl, m.nickname, m.imageUrl, SIZE(v.likes), v.viewCount) " +
             "FROM Video v " +
             "JOIN v.member m " +
             "ORDER BY v.viewCount DESC")
