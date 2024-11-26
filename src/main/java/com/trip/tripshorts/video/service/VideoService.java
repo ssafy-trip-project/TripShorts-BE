@@ -32,6 +32,7 @@ public class VideoService {
     private final TourRepository tourRepository;
     private final OpenAiService openAiService;
     private final TagRepository tagRepository;
+    private static final int DEFAULT_FEED_SIZE = 5;
 
     public String getPresignedUrlForUpload(String filename, String contentType) {
         return s3Service.generatePresignedUrlForUpload(filename, contentType);
@@ -175,40 +176,14 @@ public class VideoService {
         );
     }
 
-    public VideoPageResponse getMyVideoPages(Long cursorId, Long initialVideoId, int size) {
+    @Transactional(readOnly = true)
+    public VideoFeedResponse getMyVideoFeed() {
         Member currentMember = authService.getCurrentMember();
-
-        if(initialVideoId != null && cursorId == null){
-            cursorId = initialVideoId+1;  // 변경
-        }
-
-        List<Video> videos = videoRepository.findMyVideosByCursor(
-                currentMember.getId(),
-                cursorId,
-                size + 1
-        );
-
-        boolean hasNext = videos.size() > size;
-        List<Video> pagedVideos = hasNext ? videos.subList(0, size) : videos;
-
-        List<VideoResponse> videoResponses = pagedVideos.stream()
-                .map(video -> VideoResponse.builder()
-                        .id(video.getId())
-                        .videoUrl(video.getVideoUrl())
-                        .thumbnailUrl(video.getThumbnailUrl())
-                        .creator(VideoCreatorDto.from(video.getMember()))
-                        .likeCount(video.getLikes().size())
-                        .commentCount(video.getComments().size())
-                        .createdAt(video.getCreatedDate())
-                        .liked(video.getLikes().stream()
-                                .anyMatch(like -> like.getMember().getId().equals(currentMember.getId())))
-                        .build())
-                .toList();
-
-        Long lastVideoId = videoResponses.isEmpty() ? null :
-                videoResponses.get(videoResponses.size()-1).getId();
-
-        return VideoPageResponse.of(videoResponses, lastVideoId, hasNext);
+        List<Video> videos = videoRepository.findAllByMemberIdWithDetails(currentMember.getId());
+        log.debug("videos.size() = {}", videos.size());
+        return VideoFeedResponse.of(videos.stream()
+                .map(v -> VideoResponse.from(v, currentMember))
+                .toList());
     }
 
     public void deleteVideo(Long videoId) {
