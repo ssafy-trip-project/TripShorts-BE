@@ -88,4 +88,14 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
             @Param("cursorId") Long cursorId,
             @Param("size") int size
     );
+
+    @Query("""
+        SELECT v FROM Video v
+        LEFT JOIN FETCH v.member m
+        LEFT JOIN FETCH v.tour t
+        WHERE v.member.id = :memberId
+        ORDER BY v.id DESC
+        """)
+    List<Video> findAllByMemberIdWithDetails(@Param("memberId") Long memberId);
+
 }
