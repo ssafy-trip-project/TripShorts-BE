@@ -5,6 +5,8 @@ import com.trip.tripshorts.ai.service.OpenAiService;
 import com.trip.tripshorts.auth.service.AuthService;
 import com.trip.tripshorts.member.domain.Member;
 import com.trip.tripshorts.member.repository.MemberRepository;
+import com.trip.tripshorts.tag.dto.TagListResponse;
+import com.trip.tripshorts.tag.dto.TagResponseDto;
 import com.trip.tripshorts.tag.repository.TagRepository;
 import com.trip.tripshorts.tour.domain.Tour;
 import com.trip.tripshorts.tour.repository.TourRepository;
@@ -106,6 +108,10 @@ public class VideoService {
                     String videoKey = extractKeyFromUrl(video.getVideoUrl());
                     String thumbnailKey = extractKeyFromUrl(video.getThumbnailUrl());
                     log.debug("videokey = {}", videoKey);
+
+                    List<TagResponseDto> tagDtos = video.getTags().stream()
+                            .map(TagResponseDto::from)
+                            .toList();
                     return VideoResponse.builder()
                             .id(video.getId())
                             .videoUrl(s3Service.generatePresignedUrlForDownload(videoKey))
@@ -116,6 +122,7 @@ public class VideoService {
                             .createdAt(video.getCreatedDate())
                             .liked(video.getLikes().stream()
                                     .anyMatch(like -> like.getMember().getId().equals(currentMember.getId())))
+                            .tags(TagListResponse.from(tagDtos))
                             .build();
                 })
                 .toList();
