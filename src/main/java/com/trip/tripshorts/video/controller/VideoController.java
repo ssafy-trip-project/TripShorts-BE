@@ -70,12 +70,11 @@ public class VideoController {
     }
 
     @GetMapping("/my-videos")
-    public ResponseEntity<MyVideoPageResponse> getMyVideos(
-            @RequestParam(required = false) Long cursorId,
-            @RequestParam int size
+    public ResponseEntity<List<VideoListResponse>> getMyVideos(
+            @RequestParam(value = "id", required = false) Long id
     ) {
-        MyVideoPageResponse myVideos = videoService.getMyVideos(cursorId, size);
-        log.debug("videos Size: {}", myVideos.getVideos().size());
+        List<VideoListResponse> myVideos = videoService.getMyVideos(id);
+        log.debug("videos Size: {}", myVideos.size());
         return ResponseEntity.ok(myVideos);
     }
 

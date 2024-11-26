@@ -19,9 +19,10 @@ public class MemberService {
         Member m = authService.getCurrentMember();
         boolean isMy = id == null || m.getId().equals(id);
 
-        System.out.println("isMy " + isMy);
+        Member member = memberRepository.findById(id == null ? authService.getCurrentMember().getId() : id)
+                        .orElseThrow();
 
-        return MemberDto.from(m, isMy);
+        return MemberDto.from(member, isMy);
     }
 
     public void modifyImage(String imageUrl) {
