@@ -98,4 +98,9 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         """)
     List<Video> findAllByMemberIdWithDetails(@Param("memberId") Long memberId);
 
+    @Query("SELECT new com.trip.tripshorts.video.dto.VideoListResponse(v.id, v.thumbnailUrl, m.nickname, m.imageUrl, SIZE(v.likes), v.viewCount) " +
+            "FROM Video v " +
+            "JOIN v.member m " +
+            "WHERE m.id = :memberId")
+    List<VideoListResponse> findVideosById(@Param("memberId") Long memberId);
 }
