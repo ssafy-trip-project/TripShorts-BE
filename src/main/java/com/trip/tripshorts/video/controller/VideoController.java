@@ -77,8 +77,10 @@ public class VideoController {
 
 
     @GetMapping("/my-videos/feed")
-    public ResponseEntity<VideoFeedResponse> getMyVideoFeed() {
-        return ResponseEntity.ok(videoService.getMyVideoFeed());
+    public ResponseEntity<VideoFeedResponse> getMyVideoFeed(
+            @RequestParam(required = false) Long targetId
+    ) {
+        return ResponseEntity.ok(videoService.getMyVideoFeed(targetId));
     }
 
     @DeleteMapping("/my-videos/{videoId}")
