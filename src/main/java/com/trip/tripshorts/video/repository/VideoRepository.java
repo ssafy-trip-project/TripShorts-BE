@@ -94,7 +94,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         LEFT JOIN FETCH v.member m
         LEFT JOIN FETCH v.tour t
         WHERE v.member.id = :memberId
-        ORDER BY v.id DESC
+        ORDER BY v.createdDate DESC
         """)
     List<Video> findAllByMemberIdWithDetails(@Param("memberId") Long memberId);
 
