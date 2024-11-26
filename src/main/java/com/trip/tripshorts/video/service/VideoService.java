@@ -148,13 +148,21 @@ public class VideoService {
     }
 
     @Transactional(readOnly = true)
-    public VideoFeedResponse getMyVideoFeed() {
+    public VideoFeedResponse getMyVideoFeed(Long targetId) {
         Member currentMember = authService.getCurrentMember();
-        List<Video> videos = videoRepository.findAllByMemberIdWithDetails(currentMember.getId());
+        List<Video> videos;
+        log.debug("targetId = {}", targetId);
+        if(targetId != null && !currentMember.getId().equals(targetId)){
+            videos = videoRepository.findAllByMemberIdWithDetails(targetId);
+        } else{
+            videos = videoRepository.findAllByMemberIdWithDetails(currentMember.getId());
+        }
+
         log.debug("videos.size() = {}", videos.size());
-        return VideoFeedResponse.of(videos.stream()
-                .map(v -> VideoResponse.from(v, currentMember))
-                .toList());
+        List<VideoResponse> videoResponses = videos.stream()
+                .map(video-> VideoResponse.from(video, currentMember))
+                .toList();
+        return VideoFeedResponse.of(videoResponses);
     }
 
     public void deleteVideo(Long videoId) {
