@@ -13,6 +13,7 @@ public class MemberDto {
     private String email;
     private String nickname;
     private String imageUrl;
+    private boolean isMy;
 
     public Member toEntity() {
         return Member.builder()
@@ -22,11 +23,12 @@ public class MemberDto {
                 .build();
     }
 
-    public static MemberDto from(Member member) {
+    public static MemberDto from(Member member, boolean isMy) {
         return MemberDto.builder()
                 .nickname(member.getNickname())
                 .imageUrl(member.getImageUrl())
                 .email(member.getEmail())
+                .isMy(isMy)
                 .build();
     }
 }

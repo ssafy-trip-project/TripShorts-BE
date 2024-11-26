@@ -24,8 +24,8 @@ public class MemberController {
     private final S3Service s3Service;
 
     @GetMapping("/profile")
-    public ResponseEntity<MemberDto> getMyProfile() {
-        return ResponseEntity.ok().body(memberService.getMyprofile());
+    public ResponseEntity<MemberDto> getMyProfile(@RequestParam(value = "id", required = false) Long id) {
+        return ResponseEntity.ok().body(memberService.getMyprofile(id));
     }
 
     @GetMapping("/profile/presigned-url")

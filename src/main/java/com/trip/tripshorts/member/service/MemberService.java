@@ -15,9 +15,13 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final AuthService authService;
 
-    public MemberDto getMyprofile() {
+    public MemberDto getMyprofile(Long id) {
         Member m = authService.getCurrentMember();
-        return MemberDto.from(authService.getCurrentMember());
+        boolean isMy = id == null || m.getId().equals(id);
+
+        System.out.println("isMy " + isMy);
+
+        return MemberDto.from(m, isMy);
     }
 
     public void modifyImage(String imageUrl) {
