@@ -1,4 +1,4 @@
-package com.trip.tripshorts.video.service;
+package com.trip.tripshorts.util;
 
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;

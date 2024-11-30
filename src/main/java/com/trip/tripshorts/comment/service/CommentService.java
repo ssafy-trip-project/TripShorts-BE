@@ -9,7 +9,6 @@ import com.trip.tripshorts.member.domain.Member;
 import com.trip.tripshorts.member.repository.MemberRepository;
 import com.trip.tripshorts.video.domain.Video;
 import com.trip.tripshorts.video.repository.VideoRepository;
-import com.trip.tripshorts.video.service.S3Service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

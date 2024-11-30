@@ -1,14 +1,12 @@
 package com.trip.tripshorts.member.controller;
 
-import com.trip.tripshorts.auth.domain.UserPrincipal;
 import com.trip.tripshorts.member.dto.MemberDto;
 import com.trip.tripshorts.member.dto.MemberImageUrl;
 import com.trip.tripshorts.member.service.MemberService;
-import com.trip.tripshorts.video.service.S3Service;
+import com.trip.tripshorts.util.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
