@@ -4,12 +4,12 @@ import com.trip.tripshorts.ai.dto.GeneratedTagsResponse;
 import com.trip.tripshorts.ai.service.OpenAiService;
 import com.trip.tripshorts.auth.service.AuthService;
 import com.trip.tripshorts.member.domain.Member;
-import com.trip.tripshorts.member.repository.MemberRepository;
 import com.trip.tripshorts.tag.dto.TagListResponse;
 import com.trip.tripshorts.tag.dto.TagResponseDto;
 import com.trip.tripshorts.tag.repository.TagRepository;
 import com.trip.tripshorts.tour.domain.Tour;
 import com.trip.tripshorts.tour.repository.TourRepository;
+import com.trip.tripshorts.util.S3Service;
 import com.trip.tripshorts.video.domain.Video;
 import com.trip.tripshorts.video.dto.*;
 import com.trip.tripshorts.video.repository.VideoRepository;
@@ -34,10 +34,6 @@ public class VideoService {
     private final OpenAiService openAiService;
     private final TagRepository tagRepository;
     private static final int DEFAULT_FEED_SIZE = 5;
-
-    public String getPresignedUrlForUpload(String filename, String contentType) {
-        return s3Service.generatePresignedUrlForUpload(filename, contentType);
-    }
 
     @Transactional
     public VideoCreateResponse createVideo(VideoCreateRequest videoCreateRequest) {

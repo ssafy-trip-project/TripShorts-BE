@@ -1,6 +1,6 @@
 package com.trip.tripshorts.video.controller;
 
-import com.trip.tripshorts.auth.service.AuthService;
+import com.trip.tripshorts.util.S3Service;
 import com.trip.tripshorts.video.dto.*;
 import com.trip.tripshorts.video.service.VideoService;
 import lombok.RequiredArgsConstructor;
@@ -8,9 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/shorts")
@@ -19,19 +17,16 @@ import java.util.Map;
 public class VideoController {
 
     private final VideoService videoService;
-    private final AuthService authService;
+    private final S3Service s3Service;
 
     @GetMapping("/presigned-url")
-    public ResponseEntity<Map<String, String>> getPresignedUrlForUpload(
+    public ResponseEntity<PresignedUrlResponse> getPresignedUrlForUpload(
             @RequestParam String filename,
             @RequestParam String contentType) {
-        String presignedUrl = videoService.getPresignedUrlForUpload(filename, contentType);
+        String presignedUrl = s3Service.generatePresignedUrlForUpload(filename, contentType);
         log.info(presignedUrl);
-        Map<String, String> response = new HashMap<>();
-        response.put("presignedUrl", presignedUrl);
-        response.put("filename", filename);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new PresignedUrlResponse(presignedUrl, filename));
     }
 
     @PostMapping
