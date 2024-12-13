@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.parameters.P;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -105,4 +106,22 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
             "ORDER BY v.createdDate DESC"
     )
     List<VideoListResponse> findVideosById(@Param("memberId") Long memberId);
+
+    @Query("""
+    SELECT v FROM Video v
+    WHERE v.createdDate > :currentDate
+    OR (v.createdDate = :currentDate AND v.id > :currentVideoId)
+    ORDER BY v.createdDate DESC, v.id DESC 
+    LIMIT :size
+    """)
+    List<Video> findPreviousByRecent(@Param("currentDate") LocalDateTime currentDate, @Param("currentVideoId") Long currentVideoId, @Param("size") int size);
+
+    @Query("""
+    SELECT v FROM Video v
+    WHERE v.createdDate < :currentDate
+    OR (v.createdDate = :currentDate AND v.id < :currentVideoId)
+    ORDER BY v.createdDate DESC, v.id DESC
+    LIMIT :size
+    """)
+    List<Video> findNextByRecent(@Param("currentDate") LocalDateTime currentDate, @Param("currentVideoId") Long currentVideoId, @Param("size") int size);
 }
