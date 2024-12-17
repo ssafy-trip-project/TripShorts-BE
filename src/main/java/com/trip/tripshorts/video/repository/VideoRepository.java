@@ -163,4 +163,34 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
         LIMIT :size
     """)
     List<Video> findNextByLikes(@Param("currentVideoId") Long currentVideoId, @Param("size") int size);
+
+    @Query("""
+    SELECT v FROM Video v WHERE 
+    (
+        (v.viewCount < (SELECT v2.viewCount FROM Video v2 WHERE v2.id = :currentVideoId))
+        OR 
+        (
+            (v.viewCount = (SELECT v2.viewCount FROM Video v2 WHERE v2.id = :currentVideoId))
+            AND v.id < :currentVideoId
+        )
+    )
+    ORDER BY v.viewCount ASC, v.id ASC
+    LIMIT :size
+    """)
+    List<Video> findPreviousByViews(@Param("currentVideoId") Long currentVideoId, @Param("size") int size);
+
+    @Query("""
+    SELECT v FROM Video v WHERE 
+    (
+        (v.viewCount > (SELECT v2.viewCount FROM Video v2 WHERE v2.id = :currentVideoId))
+        OR 
+        (
+            (v.viewCount = (SELECT v2.viewCount FROM Video v2 WHERE v2.id = :currentVideoId))
+            AND v.id > :currentVideoId
+        )
+    )
+    ORDER BY v.viewCount ASC, v.id ASC
+    LIMIT :size
+    """)
+    List<Video> findNextByViews(@Param("currentVideoId") Long currentVideoId, @Param("size") int size);
 }
