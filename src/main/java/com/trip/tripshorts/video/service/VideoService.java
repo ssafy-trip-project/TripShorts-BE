@@ -85,18 +85,15 @@ public class VideoService {
 
         List<Video> prevVideos = switch(sortBy){
             case "recent" -> videoRepository.findPreviousByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
+            case "likes" -> videoRepository.findPreviousByLikes(currentVideoId, streamingVideoSize);
             default -> videoRepository.findPreviousByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
         };
 
         List<Video> nextVideos = switch(sortBy){
             case "recent" -> videoRepository.findNextByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
+            case "likes" -> videoRepository.findNextByLikes(currentVideoId, streamingVideoSize);
             default -> videoRepository.findNextByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
         };
-
-//        log.debug("Found videos with ids: {}",
-//                videos.stream()
-//                        .map(Video::getId)
-//                        .toList());
 
         VideoResponse currentVideoResponse = VideoResponse.from(currentVideo, currentMember);
 
