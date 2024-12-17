@@ -8,15 +8,16 @@ import java.util.List;
 @Getter
 @Builder
 public class VideoPageResponse {
-    private final List<VideoResponse> videos;
-    private final Long nextCursor;
-    private final boolean hasNext;
+    private final VideoResponse currentVideo;
+    private final List<Long> previousVideoIds;
+    private final List<Long> nextVideoIds;
 
-    public static VideoPageResponse of(List<VideoResponse> videos, Long lastVideoId, boolean hasNext) {
+
+    public static VideoPageResponse of(VideoResponse currentVideo, List<Long> previousVideoIds, List<Long> nextVideoIds) {
         return VideoPageResponse.builder()
-                .videos(videos)
-                .nextCursor(hasNext ? lastVideoId : null)
-                .hasNext(hasNext)
+                .currentVideo(currentVideo)
+                .previousVideoIds(previousVideoIds)
+                .nextVideoIds(nextVideoIds)
                 .build();
     }
 }
