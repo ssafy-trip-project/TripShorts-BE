@@ -124,4 +124,43 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     LIMIT :size
     """)
     List<Video> findNextByRecent(@Param("currentDate") LocalDateTime currentDate, @Param("currentVideoId") Long currentVideoId, @Param("size") int size);
+
+    @Query("""
+    SELECT v FROM Video v WHERE
+    (
+        (SELECT COUNT(g) FROM Good g WHERE g.video = v) > 
+            (SELECT COUNT(g) FROM Good g WHERE g.video.id = :currentId)
+        OR 
+        (
+            (SELECT COUNT(g) FROM Good g WHERE g.video = v) = 
+                (SELECT COUNT(g) FROM Good g WHERE g.video.id = :currentId)
+            AND v.id < :currentId
+        )
+    )
+    ORDER BY 
+        (SELECT COUNT(g) FROM Good g WHERE g.video = v) DESC,
+        v.id ASC
+    LIMIT :size
+    """)
+    List<Video> findPreviousByLikes(
+            @Param("currentId") Long currentId,
+            @Param("size") int size
+    );
+
+    @Query("""
+    SELECT v FROM Video v WHERE 
+    (
+        (SELECT COUNT(g) FROM Good g WHERE g.video = v) < (SELECT COUNT(g) FROM Good g WHERE g.video.id = :currentVideoId)
+        OR 
+        (
+            (SELECT COUNT(g) FROM Good g WHERE g.video = v) = 
+                (SELECT COUNT(g) FROM Good g WHERE g.video.id = :currentVideoId)
+            AND v.id >:currentVideoId 
+        )       
+    )
+    ORDER BY
+        (SELECT COUNT(g) FROM Good g WHERE g.video = v) DESC, v.id ASC
+        LIMIT :size
+    """)
+    List<Video> findNextByLikes(@Param("currentVideoId") Long currentVideoId, @Param("size") int size);
 }
