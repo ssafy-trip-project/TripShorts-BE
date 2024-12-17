@@ -91,4 +91,31 @@ class VideoControllerTest {
                 .andExpect(jsonPath("$.currentVideo.likeCount").value(1))
                 .andDo(print());
     }
+
+    @Test
+    @DisplayName("비디오 스트리밍 - views 정렬, 중간 비디오 요청")
+    void getVideoPageByViews_MiddleVideo() throws Exception {
+        // given
+        Long middleVideoId = 2L;
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/v1/shorts/feed")
+                .param("sortby", "views")
+                .param("cursorid", String.valueOf(middleVideoId))
+                .param("size", "5"));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.currentVideo").exists())
+                .andExpect(jsonPath("$.currentVideo.id").value(middleVideoId))
+                .andExpect(jsonPath("$.previousVideoIds").isArray())
+                .andExpect(jsonPath("$.previousVideoIds", hasSize(2)))
+                .andExpect(jsonPath("$.previousVideoIds[0]").value(1))
+                .andExpect(jsonPath("$.previousVideoIds[1]").value(3))
+                .andExpect(jsonPath("$.nextVideoIds").isArray())
+                .andExpect(jsonPath("$.nextVideoIds", hasSize(2)))
+                .andExpect(jsonPath("$.nextVideoIds[0]").value(5))
+                .andExpect(jsonPath("$.nextVideoIds[1]").value(4))
+                .andDo(print());
+    }
 }
