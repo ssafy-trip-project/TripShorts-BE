@@ -75,4 +75,20 @@ class VideoControllerTest {
                 .andDo(print());
     }
 
+    @Test
+    @DisplayName("좋아요 순 정렬")
+    void getVideoPageByLikes() throws Exception {
+        // given
+        Long videoId = 1L;  // has 1 like
+
+        // when & then
+        mockMvc.perform(get("/api/v1/shorts/feed")
+                        .param("sortby", "likes")
+                        .param("cursorid", String.valueOf(videoId))
+                        .param("size", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.currentVideo.id").value(1))
+                .andExpect(jsonPath("$.currentVideo.likeCount").value(1))
+                .andDo(print());
+    }
 }
