@@ -3,7 +3,7 @@ package com.trip.tripshorts.auth.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.trip.tripshorts.auth.JwtTokenProvider;
 import com.trip.tripshorts.auth.domain.UserPrincipal;
-import com.trip.tripshorts.auth.dto.MemberResponse;
+import com.trip.tripshorts.auth.dto.KakaoUserInfo;
 import com.trip.tripshorts.auth.dto.TokenResponse;
 import com.trip.tripshorts.member.domain.Member;
 import com.trip.tripshorts.member.repository.MemberRepository;
@@ -11,12 +11,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Optional;
@@ -46,29 +45,15 @@ public class AuthService {
         String kakaoToken = getAccessToken(code);
 
         // 토큰을 통해 사용자 정보 발급
-        JsonNode userInfo = getUserInfo("Bearer " + kakaoToken);
-
-        String email = userInfo.get("kakao_account").get("email").asText();
-        String nickname = userInfo.get("kakao_account").get("profile").get("nickname").asText();
-        String imageUrl = userInfo.get("kakao_account").get("profile").get("thumbnail_image_url").asText();
+        KakaoUserInfo userInfo = getUserInfo(kakaoToken);
 
         // 사용자 정보를 바탕으로 JWT 토큰 생성
-        String accessToken = jwtTokenProvider.createAccessToken(email);
-        String refreshToken = jwtTokenProvider.createRefreshToken(email);
+        String accessToken = jwtTokenProvider.createAccessToken(userInfo.getEmail());
+        String refreshToken = jwtTokenProvider.createRefreshToken(userInfo.getEmail());
 
         // 이메일로 회원 정보 조회
-        Optional<Member> existingMember = memberRepository.findByEmail(email);
-
-        // 처음 로그인 회원이면 DB 저장
-        if (existingMember.isEmpty()) {
-            Member member = Member.builder()
-                    .nickname(nickname)
-                    .email(email)
-                    .imageUrl(imageUrl)
-                    .build();
-
-            memberRepository.save(member);
-        }
+        memberRepository.findByEmail(userInfo.getEmail())
+                .orElseGet(() -> memberRepository.save(createNewMember(userInfo)));
 
         return new TokenResponse(accessToken, refreshToken);
     }
@@ -95,17 +80,32 @@ public class AuthService {
         }
     }
 
-    private JsonNode getUserInfo(String accessToken) {
+    private KakaoUserInfo getUserInfo(String accessToken) {
         try {
-            return restClient.get()
+            JsonNode userInfoNode = restClient.get()
                     .uri(resourceUri)
-                    .header(HttpHeaders.AUTHORIZATION, accessToken)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                     .retrieve()
                     .body(JsonNode.class);
+
+            return KakaoUserInfo.builder()
+                    .email(userInfoNode.get("kakao_account").get("email").asText())
+                    .nickname(userInfoNode.get("kakao_account").get("profile").get("nickname").asText())
+                    .imageUrl(userInfoNode.get("kakao_account").get("profile").get("thumbnail_image_url").asText())
+                    .build();
+
         } catch (RestClientException e) {
             throw new RuntimeException("Failed to fetch user info", e);
         }
+    }
+
+    private Member createNewMember(KakaoUserInfo userInfo) {
+        return Member.builder()
+                .nickname(userInfo.getNickname())
+                .email(userInfo.getEmail())
+                .imageUrl(userInfo.getImageUrl())
+                .build();
     }
 
     private String getCurrentUserEmail() {
@@ -119,13 +119,9 @@ public class AuthService {
         throw new RuntimeException("Unknown principal type: " + principal.getClass());
     }
 
+    @Transactional(readOnly = true)
     public Member getCurrentMember() {
-        String email = getCurrentUserEmail();
-        return memberRepository.findByEmail(email)
+        return memberRepository.findByEmail(getCurrentUserEmail())
                 .orElseThrow(() -> new RuntimeException("Member not found"));
-    }
-
-    public Long getCurrentMemberId() {
-        return getCurrentMember().getId();
     }
 }
