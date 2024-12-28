@@ -131,7 +131,7 @@ public class VideoService {
 
     private String extractKeyFromUrl(String url) {
         try {
-            return url.split("cloudfront.net/")[1];
+            return url.split(".com/")[1];
         } catch (Exception e) {
             log.error("Failed to extract key from URL: {}", url, e);
             throw new IllegalArgumentException("Failed to extract key from URL", e);
