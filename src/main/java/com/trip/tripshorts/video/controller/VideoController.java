@@ -61,6 +61,15 @@ public class VideoController {
         return ResponseEntity.ok(videoService.getVideoPage(sortBy, cursorId, size));
     }
 
+    @GetMapping("/feed/next")
+    public ResponseEntity<List<VideoResponse>> getNextVideoPages(
+            @RequestParam("sortby") String sortBy,
+            @RequestParam("cursorid") Long cursorId,
+            @RequestParam(required = false, defaultValue = "2") int size
+    ){
+        return ResponseEntity.ok(videoService.getNextVideopage(sortBy, cursorId, size));
+    }
+
     @GetMapping("/my-videos")
     public ResponseEntity<List<VideoListResponse>> getMyVideos(
             @RequestParam(value = "id", required = false) Long id

@@ -99,15 +99,15 @@ public class VideoService {
 
         VideoResponse currentVideoResponse = VideoResponse.from(currentVideo, currentMember);
 
-        List<Long> previousVideoIds = prevVideos.stream()
-                .map(Video::getId)
+        List<VideoResponse> previousVideoResponses = prevVideos.stream()
+                .map(video -> VideoResponse.from(video, currentMember))
+                .toList();
+        List<VideoResponse> nextVideoResponses = nextVideos.stream()
+                .map(video -> VideoResponse.from(video, currentMember))
                 .toList();
 
-        List<Long> nextVideoIds = nextVideos.stream()
-                .map(Video::getId)
-                .toList();
-
-        return VideoPageResponse.of(currentVideoResponse, previousVideoIds, nextVideoIds);
+        log.info("prev = {}, next = {}, current = {}", previousVideoResponses, nextVideoResponses, currentVideoResponse);
+        return VideoPageResponse.of(currentVideoResponse, previousVideoResponses, nextVideoResponses);
     }
 
     private String extractKeyFromUrl(String url) {
@@ -117,6 +117,24 @@ public class VideoService {
             log.error("Failed to extract key from URL: {}", url, e);
             throw new IllegalArgumentException("Failed to extract key from URL", e);
         }
+    }
+
+    public List<VideoResponse> getNextVideopage(String sortBy, Long currentVideoId, int streamingVideoSize) {
+        Member currentMember = authService.getCurrentMember();
+
+        Video currentVideo = videoRepository.findById(currentVideoId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        List<Video> nextVideos = switch(sortBy){
+            case "recent" -> videoRepository.findNextByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
+            case "likes" -> videoRepository.findNextByLikes(currentVideoId, streamingVideoSize);
+            case "views" -> videoRepository.findNextByViews(currentVideoId, streamingVideoSize);
+            default -> videoRepository.findNextByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
+        };
+
+        return nextVideos.stream()
+                .map(video -> VideoResponse.from(video, currentMember))
+                .toList();
     }
 
     @Transactional

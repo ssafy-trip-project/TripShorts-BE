@@ -9,15 +9,15 @@ import java.util.List;
 @Builder
 public class VideoPageResponse {
     private final VideoResponse currentVideo;
-    private final List<Long> previousVideoIds;
-    private final List<Long> nextVideoIds;
+    private final List<VideoResponse> previousVideos;
+    private final List<VideoResponse> nextVideos;
 
 
-    public static VideoPageResponse of(VideoResponse currentVideo, List<Long> previousVideoIds, List<Long> nextVideoIds) {
+    public static VideoPageResponse of(VideoResponse currentVideo, List<VideoResponse> previousVideos, List<VideoResponse> nextVideos) {
         return VideoPageResponse.builder()
                 .currentVideo(currentVideo)
-                .previousVideoIds(previousVideoIds)
-                .nextVideoIds(nextVideoIds)
+                .previousVideos(previousVideos)
+                .nextVideos(nextVideos)
                 .build();
     }
 }
