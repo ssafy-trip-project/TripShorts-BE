@@ -7,12 +7,4 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 class TripShortsBeApplicationTests {
-
-	@Autowired
-	S3Service s3Service;
-
-	@Test
-	void contextLoads() {
-	}
-
 }

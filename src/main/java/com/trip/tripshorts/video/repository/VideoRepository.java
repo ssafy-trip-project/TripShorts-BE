@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.parameters.P;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -105,4 +106,103 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
             "ORDER BY v.createdDate DESC"
     )
     List<VideoListResponse> findVideosById(@Param("memberId") Long memberId);
+
+    @Query("""
+    SELECT v FROM Video v
+    JOIN (
+        SELECT v2.id as id FROM Video v2 WHERE
+        v2.createdDate > :currentDate
+        OR (v2.createdDate = :currentDate AND v2.id > :currentVideoId)
+        ORDER BY v2.createdDate ASC, v2.id ASC
+        LIMIT :size
+    ) as sub ON v.id = sub.id
+    ORDER BY v.createdDate DESC, v.id DESC
+    """)
+    List<Video> findPreviousByRecent(@Param("currentDate") LocalDateTime currentDate, @Param("currentVideoId") Long currentVideoId, @Param("size") int size);
+
+    @Query("""
+    SELECT v FROM Video v
+    WHERE v.createdDate < :currentDate
+    OR (v.createdDate = :currentDate AND v.id < :currentVideoId)
+    ORDER BY v.createdDate DESC, v.id DESC
+    LIMIT :size
+    """)
+    List<Video> findNextByRecent(@Param("currentDate") LocalDateTime currentDate, @Param("currentVideoId") Long currentVideoId, @Param("size") int size);
+
+    @Query("""
+    SELECT v FROM Video v
+    JOIN (
+        SELECT v2.id as id FROM Video v2 WHERE
+        (
+            (SELECT COUNT(g) FROM Good g WHERE g.video = v2) > 
+                (SELECT COUNT(g) FROM Good g WHERE g.video.id = :currentId)
+            OR 
+            (
+                (SELECT COUNT(g) FROM Good g WHERE g.video = v2) = 
+                    (SELECT COUNT(g) FROM Good g WHERE g.video.id = :currentId)
+                AND v2.id < :currentId
+            )
+        )
+        ORDER BY v2.id DESC
+        LIMIT :size
+    ) as sub ON v.id = sub.id
+    ORDER BY 
+        (SELECT COUNT(g) FROM Good g WHERE g.video = v) DESC,
+        v.id ASC
+    """)
+    List<Video> findPreviousByLikes(
+            @Param("currentId") Long currentId,
+            @Param("size") int size
+    );
+
+    @Query("""
+    SELECT v FROM Video v WHERE 
+    (
+        (SELECT COUNT(g) FROM Good g WHERE g.video = v) < (SELECT COUNT(g) FROM Good g WHERE g.video.id = :currentVideoId)
+        OR 
+        (
+            (SELECT COUNT(g) FROM Good g WHERE g.video = v) = 
+                (SELECT COUNT(g) FROM Good g WHERE g.video.id = :currentVideoId)
+            AND v.id >:currentVideoId 
+        )       
+    )
+    ORDER BY
+        (SELECT COUNT(g) FROM Good g WHERE g.video = v) DESC, v.id ASC
+        LIMIT :size
+    """)
+    List<Video> findNextByLikes(@Param("currentVideoId") Long currentVideoId, @Param("size") int size);
+
+    @Query("""
+    SELECT v FROM Video v
+    JOIN (
+        SELECT v2.id as id FROM Video v2 WHERE
+        (
+            (v2.viewCount > (SELECT v3.viewCount FROM Video v3 WHERE v3.id = :currentVideoId))
+            OR 
+            (
+                (v2.viewCount = (SELECT v3.viewCount FROM Video v3 WHERE v3.id = :currentVideoId))
+                AND v2.id > :currentVideoId
+            )
+        )
+        ORDER BY v2.viewCount ASC, v2.id ASC
+        LIMIT :size
+    ) as sub ON v.id = sub.id
+    ORDER BY v.viewCount DESC, v.id DESC
+    """)
+    List<Video> findPreviousByViews(@Param("currentVideoId") Long currentVideoId, @Param("size") int size);
+
+    @Query("""
+    SELECT v FROM Video v WHERE 
+    (
+        (v.viewCount < (SELECT v2.viewCount FROM Video v2 WHERE v2.id = :currentVideoId))
+        OR 
+        (
+            (v.viewCount = (SELECT v2.viewCount FROM Video v2 WHERE v2.id = :currentVideoId))
+            AND v.id < :currentVideoId
+        )
+    )
+    ORDER BY v.viewCount DESC, v.id DESC
+    LIMIT :size
+    """)
+    List<Video> findNextByViews(@Param("currentVideoId") Long currentVideoId, @Param("size") int size);
 }

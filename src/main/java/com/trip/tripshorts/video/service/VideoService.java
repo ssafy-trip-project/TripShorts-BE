@@ -75,58 +75,39 @@ public class VideoService {
     }
 
     @Transactional(readOnly = true)
-    public VideoPageResponse getVideoPage(String sortBy, Long cursorId, int size) {
-        log.debug("Fetching videos with cursorId: {}, size: {}", cursorId, size);
+    public VideoPageResponse getVideoPage(String sortBy, Long currentVideoId, int size) {
+        log.debug("Fetching videos with cursorId: {}, size: {}", currentVideoId, size);
         Member currentMember = authService.getCurrentMember();
+        final int streamingVideoSize = size/2;
 
-        List<Video> videos = switch (sortBy) {
-            case "recent" -> videoRepository.findTopByRecent(cursorId, size+1);
-            case "likes" -> videoRepository.findTopByLikes(cursorId, size+1);
-            case "views" -> videoRepository.findTopByViews(cursorId, size+1);
-            default -> videoRepository.findTopByRecent(cursorId, size+1);
+        Video currentVideo = videoRepository.findById(currentVideoId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        List<Video> prevVideos = switch(sortBy){
+            case "recent" -> videoRepository.findPreviousByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
+            case "likes" -> videoRepository.findPreviousByLikes(currentVideoId, streamingVideoSize);
+            case "views" -> videoRepository.findPreviousByViews(currentVideoId, streamingVideoSize);
+            default -> videoRepository.findPreviousByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
         };
 
+        List<Video> nextVideos = switch(sortBy){
+            case "recent" -> videoRepository.findNextByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
+            case "likes" -> videoRepository.findNextByLikes(currentVideoId, streamingVideoSize);
+            case "views" -> videoRepository.findNextByViews(currentVideoId, streamingVideoSize);
+            default -> videoRepository.findNextByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
+        };
 
-        log.debug("Found videos with ids: {}",
-                videos.stream()
-                        .map(Video::getId)
-                        .toList());
+        VideoResponse currentVideoResponse = VideoResponse.from(currentVideo, currentMember);
 
-        boolean hasNext = videos.size() > size;
-        Long lastVideoId = videos.isEmpty() ? null : videos.get(videos.size()-1).getId();
-        if(hasNext){
-            videos = videos.subList(0, videos.size()-1);
-        }
-
-        List<VideoResponse> videoResponses = videos.stream()
-                .map(video -> {
-                    log.debug(video.getVideoUrl());
-                    String videoKey = extractKeyFromUrl(video.getVideoUrl());
-                    String thumbnailKey = extractKeyFromUrl(video.getThumbnailUrl());
-                    log.debug("videokey = {}", videoKey);
-
-                    List<TagResponseDto> tagDtos = video.getTags().stream()
-                            .map(TagResponseDto::from)
-                            .toList();
-                    return VideoResponse.builder()
-                            .id(video.getId())
-                            .videoUrl(s3Service.generatePresignedUrlForDownload(videoKey))
-                            .thumbnailUrl(s3Service.generatePresignedUrlForDownload(thumbnailKey))
-                            .creator(VideoCreatorDto.from(video.getMember()))
-                            .likeCount(video.getLikes().size())
-                            .commentCount(video.getComments().size())
-                            .createdAt(video.getCreatedDate())
-                            .liked(video.getLikes().stream()
-                                    .anyMatch(like -> like.getMember().getId().equals(currentMember.getId())))
-                            .tags(TagListResponse.from(tagDtos))
-                            .build();
-                })
+        List<VideoResponse> previousVideoResponses = prevVideos.stream()
+                .map(video -> VideoResponse.from(video, currentMember))
+                .toList();
+        List<VideoResponse> nextVideoResponses = nextVideos.stream()
+                .map(video -> VideoResponse.from(video, currentMember))
                 .toList();
 
-        log.debug("Returning response with nextCursor: {}, hasNext: {}",
-                lastVideoId, hasNext);
-
-        return VideoPageResponse.of(videoResponses, lastVideoId, hasNext);
+        log.info("prev = {}, next = {}, current = {}", previousVideoResponses, nextVideoResponses, currentVideoResponse);
+        return VideoPageResponse.of(currentVideoResponse, previousVideoResponses, nextVideoResponses);
     }
 
     private String extractKeyFromUrl(String url) {
@@ -136,6 +117,24 @@ public class VideoService {
             log.error("Failed to extract key from URL: {}", url, e);
             throw new IllegalArgumentException("Failed to extract key from URL", e);
         }
+    }
+
+    public List<VideoResponse> getNextVideopage(String sortBy, Long currentVideoId, int streamingVideoSize) {
+        Member currentMember = authService.getCurrentMember();
+
+        Video currentVideo = videoRepository.findById(currentVideoId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        List<Video> nextVideos = switch(sortBy){
+            case "recent" -> videoRepository.findNextByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
+            case "likes" -> videoRepository.findNextByLikes(currentVideoId, streamingVideoSize);
+            case "views" -> videoRepository.findNextByViews(currentVideoId, streamingVideoSize);
+            default -> videoRepository.findNextByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
+        };
+
+        return nextVideos.stream()
+                .map(video -> VideoResponse.from(video, currentMember))
+                .toList();
     }
 
     @Transactional
