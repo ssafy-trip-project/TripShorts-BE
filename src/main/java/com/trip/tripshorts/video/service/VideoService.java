@@ -41,7 +41,7 @@ public class VideoService {
         Tour tour = tourRepository.findById(videoCreateRequest.getTourId())
                 .orElseThrow(()-> new EntityNotFoundException("해당 관광지를 찾을 수 없습니다."));
 
-        GeneratedTagsResponse tagsResponse = openAiService.generateTags(tour.getTitle());
+//        GeneratedTagsResponse tagsResponse = openAiService.generateTags(tour.getTitle());
 
         Video video = Video.builder()
                 .videoUrl(videoCreateRequest.getVideoUrl())
@@ -51,7 +51,7 @@ public class VideoService {
                 .tags(new ArrayList<>())
                 .build();
 
-        video.addTags(tagsResponse.tags());
+//        video.addTags(tagsResponse.tags());
 
         return VideoCreateResponse.from(videoRepository.save(video));
     }
@@ -119,20 +119,33 @@ public class VideoService {
         }
     }
 
-    public List<VideoResponse> getNextVideopage(String sortBy, Long currentVideoId, int streamingVideoSize) {
+    public List<VideoResponse> getMoreVideopage(String direction, String sortBy, Long currentVideoId, int streamingVideoSize) {
         Member currentMember = authService.getCurrentMember();
 
         Video currentVideo = videoRepository.findById(currentVideoId)
                 .orElseThrow(EntityNotFoundException::new);
 
-        List<Video> nextVideos = switch(sortBy){
-            case "recent" -> videoRepository.findNextByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
-            case "likes" -> videoRepository.findNextByLikes(currentVideoId, streamingVideoSize);
-            case "views" -> videoRepository.findNextByViews(currentVideoId, streamingVideoSize);
-            default -> videoRepository.findNextByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
-        };
+        List<Video> moreVideos;
 
-        return nextVideos.stream()
+        if (direction.equals("next")) {
+            moreVideos = switch(sortBy){
+                case "recent" -> videoRepository.findNextByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
+                case "likes" -> videoRepository.findNextByLikes(currentVideoId, streamingVideoSize);
+                case "views" -> videoRepository.findNextByViews(currentVideoId, streamingVideoSize);
+                default -> videoRepository.findNextByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
+            };
+        } else if (direction.equals("previous")) {
+            moreVideos = switch(sortBy){
+                case "recent" -> videoRepository.findPreviousByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
+                case "likes" -> videoRepository.findPreviousByLikes(currentVideoId, streamingVideoSize);
+                case "views" -> videoRepository.findPreviousByViews(currentVideoId, streamingVideoSize);
+                default -> videoRepository.findPreviousByRecent(currentVideo.getCreatedDate(), currentVideoId, streamingVideoSize);
+            };
+        } else {
+            throw new IllegalArgumentException("Invalid direction: " + direction);
+        }
+
+        return moreVideos.stream()
                 .map(video -> VideoResponse.from(video, currentMember))
                 .toList();
     }

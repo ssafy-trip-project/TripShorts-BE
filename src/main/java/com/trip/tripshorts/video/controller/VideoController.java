@@ -61,13 +61,15 @@ public class VideoController {
         return ResponseEntity.ok(videoService.getVideoPage(sortBy, cursorId, size));
     }
 
-    @GetMapping("/feed/next")
+    @GetMapping("/feed/{direction}")
     public ResponseEntity<List<VideoResponse>> getNextVideoPages(
+            @PathVariable("direction") String direction,
             @RequestParam("sortby") String sortBy,
             @RequestParam("cursorid") Long cursorId,
             @RequestParam(required = false, defaultValue = "2") int size
     ){
-        return ResponseEntity.ok(videoService.getNextVideopage(sortBy, cursorId, size));
+
+        return ResponseEntity.ok(videoService.getMoreVideopage(direction, sortBy, cursorId, size));
     }
 
     @GetMapping("/my-videos")
