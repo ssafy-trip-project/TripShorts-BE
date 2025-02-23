@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -20,13 +21,21 @@ public class VideoController {
     private final S3Service s3Service;
 
     @GetMapping("/presigned-url")
-    public ResponseEntity<PresignedUrlResponse> getPresignedUrlForUpload(
-            @RequestParam String filename,
-            @RequestParam String contentType) {
-        String presignedUrl = s3Service.generatePresignedUrlForUpload(filename, contentType);
-        log.info(presignedUrl);
+    public ResponseEntity<List<PresignedUrlResponse>> getPresignedUrlsForUpload(
+            @RequestParam List<String> filenames,
+            @RequestParam List<String> contentTypes) {
 
-        return ResponseEntity.ok(new PresignedUrlResponse(presignedUrl, filename));
+        if (filenames.size() != contentTypes.size()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<PresignedUrlResponse> urls = new ArrayList<>();
+        for (int i = 0; i < filenames.size(); i++) {
+            String presignedUrl = s3Service.generatePresignedUrlForUpload(filenames.get(i), contentTypes.get(i));
+            urls.add(new PresignedUrlResponse(presignedUrl, filenames.get(i)));
+        }
+
+        return ResponseEntity.ok(urls);
     }
 
     @PostMapping
