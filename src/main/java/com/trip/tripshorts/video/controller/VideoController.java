@@ -2,6 +2,7 @@ package com.trip.tripshorts.video.controller;
 
 import com.trip.tripshorts.util.S3Service;
 import com.trip.tripshorts.video.dto.*;
+import com.trip.tripshorts.video.service.HlsConverter;
 import com.trip.tripshorts.video.service.VideoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -108,8 +109,22 @@ public class VideoController {
     @GetMapping("/s3test")
     public ResponseEntity<Void> s3test() {
         try {
-            s3Service.downloadFile("/videos/shorts/10.mp4", "C:\\Users");
-        } catch (IOException e) {
+            // 1. S3에서 동영상 다운로드
+            String localPath = "C:\\Users\\seowj\\Desktop\\video.mp4";
+            String outputDir = "C:\\Users\\seowj\\Desktop\\hls_output"; // HLS 변환된 파일 저장 폴더
+            String s3Key = "videos/shorts/10.mp4";
+
+            s3Service.downloadFile(s3Key, localPath);
+
+            // 2. HLS 변환 수행
+            HlsConverter.convertToHls(localPath, outputDir);
+
+            System.out.println("변환 완료!!!!!!!!!!!!!!!!");
+
+            // 3. 변환된 HLS 파일을 다시 S3에 업로드
+            s3Service.uploadHlsFiles(outputDir, "videos/hls/10/"); // HLS 변환된 파일을 S3에 업로드
+
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
         return ResponseEntity.ok().build();

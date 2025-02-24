@@ -93,4 +93,18 @@ public class S3Service {
         log.info("File downloaded successfully: {}", localFile.getAbsolutePath());
         return localFile;
     }
+
+    public void uploadHlsFiles(String localDir, String s3Prefix) throws IOException {
+        File folder = new File(localDir);
+        if (!folder.exists() || !folder.isDirectory()) {
+            throw new IOException("HLS 변환 폴더가 존재하지 않습니다: " + localDir);
+        }
+
+        for (File file : folder.listFiles()) {
+            String key = s3Prefix + file.getName(); // S3 저장 경로
+            amazonS3.putObject(bucket, key, file);
+            log.info("HLS 파일 업로드 완료: {}", key);
+        }
+    }
+
 }

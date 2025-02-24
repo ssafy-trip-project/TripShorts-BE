@@ -1,7 +1,9 @@
 package com.trip.tripshorts.video.service;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class HlsConverter {
 
@@ -17,6 +19,31 @@ public class HlsConverter {
         );
 
         Process process = Runtime.getRuntime().exec(command);
+
+        // FFmpeg 출력 확인
+        new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+
+        // FFmpeg 오류 확인
+        new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.err.println(line);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+
         process.waitFor();
     }
 }
