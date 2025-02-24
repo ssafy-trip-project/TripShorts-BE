@@ -3,11 +3,16 @@ package com.trip.tripshorts.util;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
@@ -61,5 +66,31 @@ public class S3Service {
         request.setExpiration(Date.from(Instant.now().plus(Duration.ofMinutes(10))));
 
         return amazonS3.generatePresignedUrl(request).toString();
+    }
+
+    public File downloadFile(String fileKey, String localPath) throws IOException {
+        log.info("Downloading file from bucket: {}, fileKey: {}", bucket, fileKey);
+
+        S3Object s3Object = amazonS3.getObject(bucket, fileKey);
+        S3ObjectInputStream inputStream = s3Object.getObjectContent();
+
+        File localFile = new File(localPath);
+        File parentDir = localFile.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+
+        try (FileOutputStream outputStream = new FileOutputStream(localFile)) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+        } finally {
+            inputStream.close();
+        }
+
+        log.info("File downloaded successfully: {}", localFile.getAbsolutePath());
+        return localFile;
     }
 }

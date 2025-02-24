@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,6 +102,16 @@ public class VideoController {
     @DeleteMapping("/my-videos/{videoId}")
     public ResponseEntity<Void> deleteVideo(@PathVariable Long videoId) {
         videoService.deleteVideo(videoId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/s3test")
+    public ResponseEntity<Void> s3test() {
+        try {
+            s3Service.downloadFile("/videos/shorts/10.mp4", "C:\\Users");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return ResponseEntity.ok().build();
     }
 }
