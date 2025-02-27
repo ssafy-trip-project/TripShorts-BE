@@ -2,17 +2,17 @@ package com.trip.tripshorts.util;
 
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.services.s3.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
@@ -92,6 +92,27 @@ public class S3Service {
 
         log.info("File downloaded successfully: {}", localFile.getAbsolutePath());
         return localFile;
+    }
+
+//    public String uploadFile(MultipartFile file) throws IOException {
+//        String filename = "videos/shorts/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
+//        ObjectMetadata metadata = new ObjectMetadata();
+//        metadata.setContentType(file.getContentType());
+//        metadata.setContentLength(file.getSize());
+//
+//        amazonS3.putObject(bucket, filename, file.getInputStream(), metadata);
+//
+//        return amazonS3.getUrl(bucket, filename).toString();
+//    }
+
+    public String uploadFile(InputStream inputStream, String filename, long contentLength, String contentType) throws IOException {
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType(contentType);
+        metadata.setContentLength(contentLength);
+
+        amazonS3.putObject(bucket, filename, inputStream, metadata);
+
+        return amazonS3.getUrl(bucket, filename).toString();
     }
 
     public void uploadHlsFiles(String localDir, String s3Prefix) throws IOException {
