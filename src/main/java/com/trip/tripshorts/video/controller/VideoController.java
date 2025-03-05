@@ -110,40 +110,15 @@ public class VideoController {
         return ResponseEntity.ok().build();
     }
 
-//    @GetMapping("/s3test")
-//    public ResponseEntity<Void> s3test() {
-//        try {
-//            // 1. S3에서 동영상 다운로드
-//            String localPath = "C:\\Users\\SSAFY\\Desktop\\video.mp4";
-//            String outputDir = "C:\\Users\\SSAFY\\Desktop\\hls_output"; // HLS 변환된 파일 저장 폴더
-//            String s3Key = "videos/shorts/10.mp4";
-//
-//            s3Service.downloadFile(s3Key, localPath);
-//
-//            // 2. HLS 변환 수행
-//            HlsConverter.convertToHls(localPath, outputDir);
-//
-//            System.out.println("변환 완료!!!!!!!!!!!!!!!!");
-//
-//            // 3. 변환된 HLS 파일을 다시 S3에 업로드
-//            s3Service.uploadHlsFiles(outputDir, "videos/hls/10/"); // HLS 변환된 파일을 S3에 업로드
-//
-//        } catch (IOException | InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
-//        return ResponseEntity.ok().build();
-//    }
-
     @PostMapping("/upload")
     public ResponseEntity<String> uploadShort(
             @RequestPart("video") MultipartFile videoFile,
             @RequestPart("thumbnail") MultipartFile thumbnailFile,
             @RequestParam("tourId") String tourId) { // ✅ @RequestPart → @RequestParam 변경
 
-        System.out.println("Received Video: " + videoFile.getOriginalFilename());
-        System.out.println("Received Thumbnail: " + thumbnailFile.getOriginalFilename());
-        System.out.println("Received tourId: " + tourId);
-
+        log.info("Received Video: " + videoFile.getOriginalFilename());
+        log.info("Received Thumbnail: " + thumbnailFile.getOriginalFilename());
+        log.info("Received tourId: " + tourId);
 
         String outputDir = "C:\\Users\\SSAFY\\Desktop\\hls_output";
         try {
