@@ -44,10 +44,10 @@ public class VideoController {
         return ResponseEntity.ok(urls);
     }
 
-    @PostMapping
-    public ResponseEntity<VideoCreateResponse> createVideo(@RequestBody VideoCreateRequest videoCreateRequest) {
-        return ResponseEntity.ok(videoService.createVideo(videoCreateRequest));
-    }
+//    @PostMapping
+//    public ResponseEntity<VideoCreateResponse> createVideo(@RequestBody VideoCreateRequest videoCreateRequest) {
+//        return ResponseEntity.ok(videoService.createVideo(videoCreateRequest));
+//    }
 
     @GetMapping
     public ResponseEntity<List<VideoListResponse>> getVideos(@RequestParam("sortby") String sortBy) {
@@ -114,15 +114,21 @@ public class VideoController {
     public ResponseEntity<String> uploadShort(
             @RequestPart("video") MultipartFile videoFile,
             @RequestPart("thumbnail") MultipartFile thumbnailFile,
-            @RequestParam("tourId") String tourId) { // ✅ @RequestPart → @RequestParam 변경
+            @RequestParam("tourId") Long tourId) { // ✅ @RequestPart → @RequestParam 변경
 
         log.info("Received Video: " + videoFile.getOriginalFilename());
         log.info("Received Thumbnail: " + thumbnailFile.getOriginalFilename());
         log.info("Received tourId: " + tourId);
 
-        String outputDir = "C:\\Users\\SSAFY\\Desktop\\hls_output";
+        String outputDir = "C:\\Users\\seowj\\Desktop\\hls_output";
         try {
-            hlsConverter.convertToHls(videoFile, outputDir);
+            // HLS 변환 및 S3 업로드 후 .m3u8 URL 반환
+            String hlsUrl = hlsConverter.convertToHls(videoFile, outputDir);
+
+            // 썸네일을 S3에 업로드 후 URL 반환
+            String thumbnailUrl = s3Service.uploadFile(thumbnailFile);
+
+            videoService.createVideo(hlsUrl, thumbnailUrl, tourId);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (InterruptedException e) {

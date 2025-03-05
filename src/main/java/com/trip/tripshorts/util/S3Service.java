@@ -94,12 +94,13 @@ public class S3Service {
         return localFile;
     }
 
-    public String uploadFile(InputStream inputStream, String filename, long contentLength, String contentType) throws IOException {
+    public String uploadFile(MultipartFile file) throws IOException {
+        String filename = "videos/shorts/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
         ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentType(contentType);
-        metadata.setContentLength(contentLength);
+        metadata.setContentType(file.getContentType());
+        metadata.setContentLength(file.getSize());
 
-        amazonS3.putObject(bucket, filename, inputStream, metadata);
+        amazonS3.putObject(bucket, filename, file.getInputStream(), metadata);
 
         return amazonS3.getUrl(bucket, filename).toString();
     }
