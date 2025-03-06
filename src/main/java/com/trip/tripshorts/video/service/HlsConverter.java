@@ -56,11 +56,11 @@ public class HlsConverter {
         tempFile.delete();
 
         // S3 업로드
-        s3Service.uploadHlsFiles(outputDir, "videos/hls/");
+        s3Service.uploadHlsFiles(outputDir, "videos/shorts/");
 
         log.info("S3 업로드 완료");
 
         // S3에 저장된 .m3u8 파일의 URL 반환
-        return "https://tripshorts.s3.ap-northeast-2.amazonaws.com/videos/hls/index.m3u8";
+        return "https://tripshorts.s3.ap-northeast-2.amazonaws.com/videos/shorts/index.m3u8";
     }
 }
