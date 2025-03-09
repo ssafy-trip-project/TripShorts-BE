@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -34,31 +35,52 @@ public class HlsConverter {
 
         // 변환될 HLS 파일의 UUID 생성
         String fileName = UUID.randomUUID().toString();
-        String m3u8FilePath = outputDir + "/" + fileName + ".m3u8";
+        String m3u8MasterPath = outputDir + "/" + fileName + "_master.m3u8";
 
-        // Fmpeg 명령어 (pipe:0 대신 파일 경로 사용)
-        List<String> command = Arrays.asList(
-                "ffmpeg", "-y", "-i", tempFile.getAbsolutePath(), "-profile:v", "baseline", "-level", "3.0",
-                "-s", "640x360", "-start_number", "0", "-hls_time", "5", "-hls_list_size", "0",
-                "-f", "hls", m3u8FilePath
-        );
+        // 여러 해상도로 변환
+        String[] resolutions = {"640x360", "854x480", "1280x720"};
+        String[] bitrates = {"800k", "1400k", "2800k"};
+        List<String> hlsVariants = new ArrayList<>();
 
-        // FFmpeg 프로세스 실행
-        ProcessBuilder processBuilder = new ProcessBuilder(command);
-        processBuilder.redirectErrorStream(true);
-        Process process = processBuilder.start();
+        for (int i = 0; i < resolutions.length; i++) {
+            String resolution = resolutions[i];
+            String bitrate = bitrates[i];
+            String variantM3U8 = outputDir + "/" + fileName + "_" + (i + 1) + ".m3u8";
+            hlsVariants.add("#EXT-X-STREAM-INF:BANDWIDTH=" + bitrate.replace("k", "000") + ",RESOLUTION=" + resolution + "\n" + fileName + "_" + (i + 1) + ".m3u8");
 
-        // FFmpeg 로그 출력
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                log.info(line);
+            List<String> command = Arrays.asList(
+                    "ffmpeg", "-y", "-i", tempFile.getAbsolutePath(),
+                    "-profile:v", "baseline", "-level", "3.0", "-s", resolution, "-b:v", bitrate,
+                    "-start_number", "0", "-hls_time", "5", "-hls_list_size", "0",
+                    "-f", "hls", variantM3U8
+            );
+
+            // FFmpeg 실행
+            ProcessBuilder processBuilder = new ProcessBuilder(command);
+            processBuilder.redirectErrorStream(true);
+            Process process = processBuilder.start();
+
+            // FFmpeg 로그 출력
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    log.info(line);
+                }
+            }
+
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new RuntimeException("FFmpeg 변환 실패: 종료 코드 " + exitCode);
             }
         }
 
-        int exitCode = process.waitFor();
-        if (exitCode != 0) {
-            throw new RuntimeException("FFmpeg 변환 실패: 종료 코드 " + exitCode);
+
+        File masterPlaylist = new File(m3u8MasterPath);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(masterPlaylist))) {
+            writer.write("#EXTM3U\n");
+            for (String variant : hlsVariants) {
+                writer.write(variant + "\n");
+            }
         }
 
         // 변환 완료 후 임시 파일 삭제
@@ -70,6 +92,6 @@ public class HlsConverter {
         log.info("S3 업로드 완료");
 
         // S3에 저장된 .m3u8 파일의 URL 반환
-        return s3Path + "/videos/hls/" + fileName + ".m3u8";
+        return s3Path + "/videos/hls/" + fileName + "_master.m3u8";
     }
 }
