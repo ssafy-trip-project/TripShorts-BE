@@ -29,18 +29,18 @@
 ## 주요 기능
 
 ### 메인 화면
-<img width="80%" src="https://github.com/user-attachments/assets/bc9b2d8a-fe4f-48f0-a7c6-d18dcc044a6d">
+<img src="https://github.com/user-attachments/assets/bc9b2d8a-fe4f-48f0-a7c6-d18dcc044a6d">
 
 ### 동영상 시청
 ![TripShorts-Chrome2025-03-2023-37-46-ezgif com-crop](https://github.com/user-attachments/assets/a19da620-c236-44f0-afa2-6d3710604251)
 
 
 ### 여행지 세부 정보
-<img width="80%" src="https://github.com/user-attachments/assets/a9732c70-ce7b-4598-8805-26734349b596">
+<img src="https://github.com/user-attachments/assets/a9732c70-ce7b-4598-8805-26734349b596">
 
 
 ### 내 프로필
-<img width="80%" src="https://github.com/user-attachments/assets/7504551e-6f83-4eb8-aef3-df5fe61e1859">
+<img src="https://github.com/user-attachments/assets/7504551e-6f83-4eb8-aef3-df5fe61e1859">
 
 
 ## 멤버
