@@ -2,14 +2,19 @@ package com.trip.tripshorts.video.controller;
 
 import com.trip.tripshorts.util.S3Service;
 import com.trip.tripshorts.video.dto.*;
+import com.trip.tripshorts.video.service.HlsConverter;
 import com.trip.tripshorts.video.service.VideoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/v1/shorts")
@@ -19,6 +24,7 @@ public class VideoController {
 
     private final VideoService videoService;
     private final S3Service s3Service;
+    private final HlsConverter hlsConverter;
 
     @GetMapping("/presigned-url")
     public ResponseEntity<List<PresignedUrlResponse>> getPresignedUrlsForUpload(
@@ -38,10 +44,10 @@ public class VideoController {
         return ResponseEntity.ok(urls);
     }
 
-    @PostMapping
-    public ResponseEntity<VideoCreateResponse> createVideo(@RequestBody VideoCreateRequest videoCreateRequest) {
-        return ResponseEntity.ok(videoService.createVideo(videoCreateRequest));
-    }
+//    @PostMapping
+//    public ResponseEntity<VideoCreateResponse> createVideo(@RequestBody VideoCreateRequest videoCreateRequest) {
+//        return ResponseEntity.ok(videoService.createVideo(videoCreateRequest));
+//    }
 
     @GetMapping
     public ResponseEntity<List<VideoListResponse>> getVideos(@RequestParam("sortby") String sortBy) {
@@ -102,5 +108,33 @@ public class VideoController {
     public ResponseEntity<Void> deleteVideo(@PathVariable Long videoId) {
         videoService.deleteVideo(videoId);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadShort(
+            @RequestPart("video") MultipartFile videoFile,
+            @RequestPart("thumbnail") MultipartFile thumbnailFile,
+            @RequestParam("tourId") Long tourId) { // ✅ @RequestPart → @RequestParam 변경
+
+        log.info("Received Video: " + videoFile.getOriginalFilename());
+        log.info("Received Thumbnail: " + thumbnailFile.getOriginalFilename());
+        log.info("Received tourId: " + tourId);
+
+        String outputDir = "C:\\Users\\seowj\\Desktop\\hls_output";
+        try {
+            // HLS 변환 및 S3 업로드 후 .m3u8 URL 반환
+            String hlsUrl = hlsConverter.convertToHls(videoFile, outputDir);
+
+            // 썸네일을 S3에 업로드 후 URL 반환
+            String thumbnailUrl = s3Service.uploadFile(thumbnailFile);
+
+            videoService.createVideo(hlsUrl, thumbnailUrl, tourId);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        return ResponseEntity.ok("Upload successful");
     }
 }

@@ -2,12 +2,17 @@ package com.trip.tripshorts.util;
 
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.amazonaws.services.s3.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
@@ -62,4 +67,55 @@ public class S3Service {
 
         return amazonS3.generatePresignedUrl(request).toString();
     }
+
+    public File downloadFile(String fileKey, String localPath) throws IOException {
+        log.info("Downloading file from bucket: {}, fileKey: {}", bucket, fileKey);
+
+        S3Object s3Object = amazonS3.getObject(bucket, fileKey);
+        S3ObjectInputStream inputStream = s3Object.getObjectContent();
+
+        File localFile = new File(localPath);
+        File parentDir = localFile.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+
+        try (FileOutputStream outputStream = new FileOutputStream(localFile)) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+        } finally {
+            inputStream.close();
+        }
+
+        log.info("File downloaded successfully: {}", localFile.getAbsolutePath());
+        return localFile;
+    }
+
+    public String uploadFile(MultipartFile file) throws IOException {
+        String filename = "videos/shorts/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType(file.getContentType());
+        metadata.setContentLength(file.getSize());
+
+        amazonS3.putObject(bucket, filename, file.getInputStream(), metadata);
+
+        return amazonS3.getUrl(bucket, filename).toString();
+    }
+
+    public void uploadHlsFiles(String localDir, String s3Prefix) throws IOException {
+        File folder = new File(localDir);
+        if (!folder.exists() || !folder.isDirectory()) {
+            throw new IOException("HLS 변환 폴더가 존재하지 않습니다: " + localDir);
+        }
+
+        for (File file : folder.listFiles()) {
+            String key = s3Prefix + file.getName(); // S3 저장 경로
+            amazonS3.putObject(bucket, key, file);
+            log.info("HLS 파일 업로드 완료: {}", key);
+        }
+    }
+
 }

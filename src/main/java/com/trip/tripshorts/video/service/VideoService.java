@@ -36,16 +36,16 @@ public class VideoService {
     private static final int DEFAULT_FEED_SIZE = 5;
 
     @Transactional
-    public VideoCreateResponse createVideo(VideoCreateRequest videoCreateRequest) {
+    public VideoCreateResponse createVideo(String hlsUrl, String thumnailUrl, Long tourId) {
         Member member = authService.getCurrentMember();
-        Tour tour = tourRepository.findById(videoCreateRequest.getTourId())
+        Tour tour = tourRepository.findById(tourId)
                 .orElseThrow(()-> new EntityNotFoundException("해당 관광지를 찾을 수 없습니다."));
 
 //        GeneratedTagsResponse tagsResponse = openAiService.generateTags(tour.getTitle());
 
         Video video = Video.builder()
-                .videoUrl(videoCreateRequest.getVideoUrl())
-                .thumbnailUrl(videoCreateRequest.getThumbnailUrl())
+                .videoUrl(hlsUrl)
+                .thumbnailUrl(thumnailUrl)
                 .member(member)
                 .tour(tour)
                 .tags(new ArrayList<>())
@@ -194,6 +194,5 @@ public class VideoService {
         tour.getVideos().remove(video);
 
         videoRepository.delete(video);
-        return;
     }
 }
