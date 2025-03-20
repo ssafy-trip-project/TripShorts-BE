@@ -26,6 +26,20 @@
 <br>
 <br>
 
+## 주요 기능
+
+### 메인 화면
+<img width="80%" src="https://github.com/user-attachments/assets/bc9b2d8a-fe4f-48f0-a7c6-d18dcc044a6d">
+
+### 동영상 시청
+
+
+### 여행지 세부 정보
+
+
+### 내 프로필
+
+
 ## 멤버
 
 
